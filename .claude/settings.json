@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(cmd /c \"dir \"\"Z:\\\\ORBI CLAUDE_0223\\\\ORBITERS CLAUDE\\\\ORBITERS CLAUDE\\\\kazuki\"\"\")",
+      "WebFetch(domain:develop.d-apri.com)",
+      "WebFetch(domain:secure.ryoshusho.com)"
+    ]
+  }
+}

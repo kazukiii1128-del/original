@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>com.wongi.kazuki-weekly</string>
+
+    <key>ProgramArguments</key>
+    <array>
+        <string>/Library/Developer/CommandLineTools/Library/Frameworks/Python3.framework/Versions/3.9/bin/python3.9</string>
+        <string>/Users/wongi/Desktop/DEV/WG/kazuki/generate_weekly.py</string>
+    </array>
+
+    <!-- 매주 월요일 09:00 KST -->
+    <key>StartCalendarInterval</key>
+    <dict>
+        <key>Weekday</key>
+        <integer>1</integer>
+        <key>Hour</key>
+        <integer>9</integer>
+        <key>Minute</key>
+        <integer>0</integer>
+    </dict>
+
+    <key>StandardOutPath</key>
+    <string>/Users/wongi/Desktop/DEV/WG/kazuki/kazuki.log</string>
+    <key>StandardErrorPath</key>
+    <string>/Users/wongi/Desktop/DEV/WG/kazuki/kazuki.log</string>
+
+    <key>EnvironmentVariables</key>
+    <dict>
+        <key>PATH</key>
+        <string>/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin</string>
+        <key>HOME</key>
+        <string>/Users/wongi</string>
+        <key>PYTHONPATH</key>
+        <string>/Users/wongi/Desktop/DEV/WG/weekly-report/venv/lib/python3.9/site-packages</string>
+    </dict>
+
+    <!-- 부팅/절전 복귀 후 미실행된 경우 실행 -->
+    <key>RunAtLoad</key>
+    <false/>
+</dict>
+</plist>

@@ -1,0 +1,3 @@
+[  250040ms] [ERROR] Refused to apply style from 'https://mainmenu.rms.rakuten.co.jp/css/sp/top.20181003.001.css' because its MIME type ('text/html') is not a supported stylesheet MIME type, and strict MIME checking is enabled. @ https://mainmenu.rms.rakuten.co.jp/?act=login&sp_id=1:0
+[  256390ms] [ERROR] Failed to load resource: net::ERR_NAME_NOT_RESOLVED @ https://confer.rms.rakuten.co.jp/auth/?r=96a21142&t=MTc3MzM4NjE3NiYxNzczMzg2MzU2JjdkZDI3ZDcz:0
+[  257330ms] [ERROR] Failed to load resource: net::ERR_BLOCKED_BY_RESPONSE.NotSameOrigin @ https://room.rms.rakuten.co.jp/login?r=113b5b30&t=MTc3MzM4NjE3NiYxNzczMzg2MzU2JjU3YWY2Yzhk:0

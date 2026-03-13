@@ -1,0 +1,19 @@
+Fetching shipped orders (last 30 days)...
+Found 15 orders
+  Skipping 435776-20260311-0601212682 (shipped 2026-03-12, waiting 3d)
+  Skipping 435776-20260310-0174712859 (shipped 2026-03-12, waiting 3d)
+  Skipping 435776-20260310-0539212679 (shipped 2026-03-12, waiting 3d)
+  Skipping 435776-20260310-0031312831 (shipped 2026-03-12, waiting 3d)
+  Skipping 435776-20260310-0384912559 (shipped 2026-03-12, waiting 3d)
+  Skipping 435776-20260310-0721712317 (shipped 2026-03-12, waiting 3d)
+  Skipping 435776-20260310-0219612460 (shipped 2026-03-12, waiting 3d)
+  Skipping 435776-20260310-0681012233 (shipped 2026-03-12, waiting 3d)
+  Skipping 435776-20260310-0767012204 (shipped 2026-03-12, waiting 3d)
+  Skipping 435776-20260310-0806112107 (shipped 2026-03-11, waiting 3d)
+  Skipping 435776-20260310-0597912027 (shipped 2026-03-11, waiting 3d)
+  Skipping 435776-20260309-0154612197 (shipped 2026-03-11, waiting 3d)
+  Skipping 435776-20260309-0437612052 (shipped 2026-03-11, waiting 3d)
+  Skipping 435776-20260309-0683711928 (shipped 2026-03-11, waiting 3d)
+  Skipping 435776-20260309-0200912164 (shipped 2026-03-11, waiting 3d)
+
+Done. sent=0, skipped=15

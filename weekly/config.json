@@ -1,0 +1,18 @@
+{
+  "anthropic": {
+    "api_key": "YOUR_ANTHROPIC_API_KEY"
+  },
+  "notion": {
+    "api_token": "YOUR_NOTION_API_TOKEN",
+    "weekly_report_db_id": "YOUR_NOTION_DB_ID",
+    "member_name": "Kazuki",
+    "team_name": "JAPAN"
+  },
+  "instagram": {
+    "app_id": "YOUR_INSTAGRAM_APP_ID",
+    "app_secret": "YOUR_INSTAGRAM_APP_SECRET",
+    "access_token": "YOUR_INSTAGRAM_ACCESS_TOKEN",
+    "ig_user_id": "YOUR_INSTAGRAM_USER_ID",
+    "account_name": "grosmimi_jp"
+  }
+}
