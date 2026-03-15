@@ -1,0 +1,33 @@
+name: Rakuten Daily Report
+
+on:
+  schedule:
+    - cron: '30 23 * * *'  # 08:30 JST (= 23:30 UTC)
+  workflow_dispatch:        # 手動実行も可能
+
+jobs:
+  report:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: pip install requests python-dotenv
+
+      - name: Create credentials file
+        env:
+          RAKUTEN_RMS_CONFIG: ${{ secrets.RAKUTEN_RMS_CONFIG }}
+        run: |
+          mkdir -p credentials
+          echo "$RAKUTEN_RMS_CONFIG" > credentials/rakuten_rms_config.json
+
+      - name: Run Rakuten daily report
+        env:
+          TEAMS_RAKUTEN_WEBHOOK_URL: ${{ secrets.TEAMS_RAKUTEN_WEBHOOK_URL }}
+        run: |
+          cd $GITHUB_WORKSPACE
+          PYTHONPATH=tools python tools/rakuten_daily_report.py --days 30
