@@ -694,13 +694,21 @@ def generate_weekly_plans(start_offset: int = 1):
             logger.warning(f"{target_str} plan generation failed — skipping")
             continue
 
+        # Save plan JSON so run_slot can load it later
+        plan_file = TMP_DIR / f"daily_tweet_plan_{target_str}.json"
+        TMP_DIR.mkdir(parents=True, exist_ok=True)
+        with open(plan_file, "w", encoding="utf-8") as _f:
+            import json as _json
+            _json.dump(plan, _f, ensure_ascii=False, indent=2)
+
         # Step 2: Generate reply drafts for slots with engage_count > 0
         reply_slots = [s for s in SLOTS if SLOT_CONFIG.get(s, {}).get("engage_count", 0) > 0]
         if reply_slots:
             try:
                 reply_plans = plan_daily_replies(reply_slots)
-                plan_file = str(TMP_DIR / f"daily_tweet_plan_{target_str}.json")
-                plan = merge_replies_into_plan(reply_plans, plan_file=plan_file)
+                merged = merge_replies_into_plan(reply_plans, plan_file=str(plan_file))
+                if merged:
+                    plan = merged
             except Exception as e:
                 logger.warning(f"Reply planning failed for {target_str}: {e}")
 
