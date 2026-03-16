@@ -333,12 +333,31 @@ def run_slot(slot: int, dry_run: bool = False) -> dict:
             logger.info(f"[DRY RUN] Reply #{i} to @{r.get('target_username','?')}: {r.get('reply_jp','')[:60]}...")
         return {"status": "dry_run", "tweet": tweet_jp, "replies": len(replies)}
 
-    # ── Step 2: Auto-post (no approval required) ──────────────────────────────
-    logger.info(f"Slot {slot}: auto-posting (no approval required)")
-    confirmed = True
+    # ── Step 2: Check Excel approval (once) ───────────────────────────────────
+    logger.info(f"Checking Excel approval for slot {slot}...")
+    confirmed = False
+    try:
+        excel_result = _check_excel_for_slot(slot)
+        action = excel_result["action"]
+        alt_text = excel_result.get("alt_text", "")
+
+        if action == "approve":
+            logger.info("Tweet CONFIRMED — posting")
+            confirmed = True
+        elif action == "replace":
+            logger.info(f"Using alt text: {alt_text[:60]}...")
+            tweet_jp = alt_text
+            tweet_ko = ""
+            confirmed = True
+        elif action == "cancel":
+            logger.info("Tweet DECLINED — skipping")
+            return {"status": "cancelled", "reason": "declined"}
+        else:
+            logger.info("No approval found — skipping")
+    except Exception as e:
+        logger.warning(f"Excel check failed: {e} — skipping")
 
     if not confirmed:
-        logger.info(f"Slot {slot}: skipped.")
         return {"status": "skipped", "reason": "no confirmation"}
 
     # ── Step 3: Post tweet ─────────────────────────────────────────────────
