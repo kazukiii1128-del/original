@@ -129,6 +129,62 @@ def analyze_brand(brand: dict, tweets: list[dict]) -> str:
         return "分析できませんでした。"
 
 
+# ── Excel生成 ─────────────────────────────────────────────────────────────────
+
+def create_research_excel(results: dict, date_str: str) -> Path:
+    """調査結果をExcelファイルに出力する。"""
+    import openpyxl
+    from openpyxl.styles import Font, PatternFill, Alignment
+
+    wb = openpyxl.Workbook()
+    ws = wb.active
+    ws.title = "競合調査"
+
+    # ヘッダー
+    headers = ["カテゴリ", "ブランド名", "ツイート件数", "分析結果", "サンプルURL①", "サンプルURL②", "サンプルURL③"]
+    header_fill = PatternFill(start_color="1F4E79", end_color="1F4E79", fill_type="solid")
+    header_font = Font(color="FFFFFF", bold=True)
+
+    for col, h in enumerate(headers, 1):
+        cell = ws.cell(row=1, column=col, value=h)
+        cell.fill = header_fill
+        cell.font = header_font
+        cell.alignment = Alignment(horizontal="center")
+
+    # データ行
+    row = 2
+    fill_comp = PatternFill(start_color="DEEAF1", end_color="DEEAF1", fill_type="solid")
+    fill_ref  = PatternFill(start_color="E2EFDA", end_color="E2EFDA", fill_type="solid")
+
+    for category, brand_results in results.items():
+        fill = fill_comp if category == "競合" else fill_ref
+        for brand_name, data in brand_results.items():
+            urls = data.get("sample_urls", [])
+            ws.cell(row=row, column=1, value=category).fill = fill
+            ws.cell(row=row, column=2, value=brand_name).fill = fill
+            ws.cell(row=row, column=3, value=data.get("tweet_count", 0)).fill = fill
+            analysis_cell = ws.cell(row=row, column=4, value=data.get("analysis", ""))
+            analysis_cell.fill = fill
+            analysis_cell.alignment = Alignment(wrap_text=True)
+            for i, url in enumerate(urls[:3]):
+                ws.cell(row=row, column=5 + i, value=url).fill = fill
+            row += 1
+
+    # 列幅調整
+    ws.column_dimensions["A"].width = 10
+    ws.column_dimensions["B"].width = 18
+    ws.column_dimensions["C"].width = 12
+    ws.column_dimensions["D"].width = 60
+    for col in ["E", "F", "G"]:
+        ws.column_dimensions[col].width = 40
+
+    TMP_DIR.mkdir(parents=True, exist_ok=True)
+    path = TMP_DIR / f"twitter_research_{date_str}.xlsx"
+    wb.save(path)
+    logger.info(f"Research Excel saved: {path}")
+    return path
+
+
 # ── Teams報告 ─────────────────────────────────────────────────────────────────
 
 def send_report(results: dict) -> None:
@@ -195,6 +251,20 @@ def run_research() -> None:
     logger.info(f"Saved: {out_path}")
 
     send_report(results)
+
+    # Excel生成 → Teamsにアップロード
+    try:
+        excel_path = create_research_excel(results, date_str)
+        from teams_upload import upload_file
+        upload_file(
+            str(excel_path),
+            notify=True,
+            message=f"📊 {date_str} 競合Twitter調査レポート（Excelで確認できます）",
+        )
+        logger.info("Research Excel uploaded to Teams")
+    except Exception as e:
+        logger.warning(f"Excel upload failed: {e}")
+
     logger.info("=== 調査マン DONE ===")
 
 

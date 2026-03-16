@@ -14,6 +14,11 @@ jobs:
       FIRECRAWL_API_KEY:        ${{ secrets.FIRECRAWL_API_KEY }}
       TEAMS_WEBHOOK_URL:        ${{ secrets.TEAMS_WEBHOOK_URL }}
       TEAMS_MASTER_WEBHOOK_URL: ${{ secrets.TEAMS_MASTER_WEBHOOK_URL }}
+      TEAMS_TENANT_ID:          ${{ secrets.TEAMS_TENANT_ID }}
+      TEAMS_GRAPH_CLIENT_ID:    ${{ secrets.TEAMS_GRAPH_CLIENT_ID }}
+      TEAMS_GRAPH_CLIENT_SECRET: ${{ secrets.TEAMS_GRAPH_CLIENT_SECRET }}
+      TEAMS_TEAM_ID:            ${{ secrets.TEAMS_TEAM_ID }}
+      TEAMS_CHANNEL_ID:         ${{ secrets.TEAMS_CHANNEL_ID }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
