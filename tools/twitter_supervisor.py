@@ -1,5 +1,5 @@
 """
-監督係: 毎朝09:00 JSTに今日のツイート予定をTeamsに通知する。
+監督: 毎朝09:00 JSTに今日のツイート予定をTeamsに通知する。
 
 - 今日のプランをSharePoint/ローカルから読み込む
 - 10:00・19:00の予定ツイートをTeamsに送信
@@ -142,7 +142,7 @@ def main():
         webhook_url = os.getenv("TEAMS_WEBHOOK_URL") or os.getenv("TEAMS_MASTER_WEBHOOK_URL")
         if webhook_url:
             requests.post(webhook_url, json={
-                "text": f"⚠️ **監督係**: {date_str} のツイートプランが見つかりません。企画係を手動実行してください。"
+                "text": f"⚠️ **監督**: {date_str} のツイートプランが見つかりません。企画マンを手動実行してください。"
             }, timeout=10)
         return
 

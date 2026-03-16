@@ -1,4 +1,4 @@
-name: 監督係
+name: 監督
 
 on:
   schedule:
@@ -7,7 +7,7 @@ on:
 
 jobs:
   kantoku:
-    name: 監督係 — 今日のツイート予定をTeams通知
+    name: 監督 — 今日のツイート予定をTeams通知
     runs-on: ubuntu-latest
     env:
       ANTHROPIC_API_KEY:            ${{ secrets.ANTHROPIC_API_KEY }}

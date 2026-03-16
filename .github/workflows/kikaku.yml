@@ -1,4 +1,4 @@
-name: 企画係
+name: 企画マン
 
 on:
   schedule:
@@ -7,7 +7,7 @@ on:
 
 jobs:
   kikaku:
-    name: 企画係 — 週間ツイートプラン生成 → Teams
+    name: 企画マン — 週間ツイートプラン生成 → Teams
     runs-on: ubuntu-latest
     env:
       ANTHROPIC_API_KEY:            ${{ secrets.ANTHROPIC_API_KEY }}

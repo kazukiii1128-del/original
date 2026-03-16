@@ -333,7 +333,7 @@ def translate_to_korean(text: str) -> str:
 
 
 def notify_supervisor(tweet_info: dict, reply_text: str, reply_url: str) -> None:
-    """コメント投稿をTeamsに報告する（監督係）。"""
+    """コメント投稿をTeamsに報告する（監督）。"""
     import requests
 
     webhook_url = os.getenv("TEAMS_WEBHOOK_URL") or os.getenv("TEAMS_MASTER_WEBHOOK_URL")
