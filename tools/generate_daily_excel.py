@@ -367,7 +367,7 @@ def create_weekly_excel(
 
         period = sheet_name
         ws1.merge_cells("A1:H1")
-        ws1["A1"] = f"@grosmimi_japan トゥウィートプラン — {date_str} ({period})"
+        ws1["A1"] = f"@grosmimi_japan ツイートプラン — {date_str} ({period})"
         ws1["A1"].font = Font(bold=True, size=14, name="맑은 고딕")
         ws1["A1"].alignment = Alignment(horizontal="center")
 
