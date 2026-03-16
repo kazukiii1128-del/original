@@ -61,6 +61,18 @@ DAILY_REPLY_LIMIT = 10  # max replies per day
 MODEL = "claude-sonnet-4-20250514"
 MIN_FOLLOWERS = 100  # minimum follower count
 
+TWITTER_EPOCH_MS = 1288834974657  # Nov 4, 2010 UTC
+MIN_TWEET_DATE = datetime(2026, 1, 1, tzinfo=timezone.utc)  # 2026年以降のみ
+
+
+def get_tweet_date(tweet_id: str) -> datetime | None:
+    """ツイートIDからタイムスタンプを取得（Snowflake ID）。"""
+    try:
+        ts_ms = (int(tweet_id) >> 22) + TWITTER_EPOCH_MS
+        return datetime.fromtimestamp(ts_ms / 1000, tz=timezone.utc)
+    except Exception:
+        return None
+
 # Competitor / brand accounts to skip (lowercase)
 BLOCKED_ACCOUNTS = {
     "pigeon", "pigeon_jp", "combi_jp", "combi", "richell_jp", "richell",
@@ -476,9 +488,15 @@ def run_engagement(
         if reply_count >= max_replies:
             break
 
+        # 2026年以降のツイートのみ
+        tweet_date = get_tweet_date(tweet["tweet_id"])
+        if tweet_date and tweet_date < MIN_TWEET_DATE:
+            continue  # 古いツイートはスキップ（表示なし）
+
         print(f"\n--- Target Tweet ---")
         print(f"  @{tweet['username']}: {tweet['description'][:80]}...")
         print(f"  URL: {tweet['url']}")
+        print(f"  Date: {tweet_date.strftime('%Y-%m-%d') if tweet_date else '?'}")
 
         # Fetch user info and apply filters
         user_info = get_user_info(api, tweet["username"], tweet_info=tweet)
