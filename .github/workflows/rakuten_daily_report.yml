@@ -30,4 +30,4 @@ jobs:
           TEAMS_RAKUTEN_WEBHOOK_URL: ${{ secrets.TEAMS_RAKUTEN_WEBHOOK_URL }}
         run: |
           cd $GITHUB_WORKSPACE
-          PYTHONPATH=tools python tools/rakuten_daily_report.py --days 30
+          PYTHONPATH=tools python tools/rakuten_daily_report.py
