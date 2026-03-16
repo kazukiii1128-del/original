@@ -1,8 +1,9 @@
 """
-監督: 毎朝09:00 JSTに今日のツイート予定をTeamsに通知する。
+監督: 毎朝09:00 JSTに今日の全部隊スケジュールをTeamsに通知する。
 
 - 今日のプランをSharePoint/ローカルから読み込む
 - 10:00・19:00の予定ツイートをTeamsに送信
+- コメンター・調査マンの予定も案内
 - 承認待ちの場合は「承認してください」と促す
 """
 
@@ -62,18 +63,18 @@ def get_today_plan() -> dict:
 
 def get_approval_status(date_str: str) -> dict:
     """ExcelからConfirmed/Declined状態を取得する。"""
-    status = {}
+    status = {10: "pending", 19: "pending"}
     try:
         from excel_feedback import download_plan_excel, read_feedback
         excel_path = download_plan_excel()
         if excel_path:
-            for slot in [10, 19]:
-                result = read_feedback(excel_path, slot, date_str)
-                status[slot] = result.get("action", "pending")
+            feedbacks = read_feedback(excel_path)
+            for fb in feedbacks:
+                slot = fb.get("slot")
+                if slot in (10, 19):
+                    status[slot] = fb.get("action", "pending")
     except Exception as e:
         logger.warning(f"Excel check failed: {e}")
-        for slot in [10, 19]:
-            status[slot] = "pending"
     return status
 
 
@@ -120,6 +121,12 @@ def send_daily_briefing(plan: dict, date_str: dict, approval: dict):
         slots_str = "・".join([f"{s}:00" for s in pending])
         lines.append(f"⚠️ **{slots_str} の承認をお願いします。**")
         lines.append("Excelで「Confirmed」を入力して保存してください。")
+        lines.append("")
+
+    lines.append("---")
+    lines.append("🗓️ **今日の部隊スケジュール**")
+    lines.append("12:00〜16:00 コメンター（1時間ごとに共感コメント × 5）")
+    lines.append("16:00 調査マン（競合・参考ブランドのTwitter調査レポート）")
 
     message = "\n".join(lines)
 

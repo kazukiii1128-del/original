@@ -2,7 +2,7 @@ name: 調査マン
 
 on:
   schedule:
-    - cron: '0 0 * * 1'   # 毎週月曜 09:00 JST — 競合・参考ブランドのTwitter運用を調査
+    - cron: '0 7 * * *'   # 毎日 16:00 JST — 競合・参考ブランドのTwitter運用を調査
   workflow_dispatch:
 
 jobs:
