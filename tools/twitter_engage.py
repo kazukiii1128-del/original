@@ -59,6 +59,17 @@ ENGAGE_LOG_PATH = TMP_DIR / "twitter_engage_log.json"
 FIRECRAWL_DIR = PROJECT_ROOT / ".firecrawl"
 DAILY_REPLY_LIMIT = 10  # max replies per day
 MODEL = "claude-sonnet-4-20250514"
+MIN_FOLLOWERS = 100  # minimum follower count
+
+# Competitor / brand accounts to skip (lowercase)
+BLOCKED_ACCOUNTS = {
+    "pigeon", "pigeon_jp", "combi_jp", "combi", "richell_jp", "richell",
+    "nuk_japan", "nuk", "boon_jp", "munchkin_japan", "munchkin",
+    "thermos_jp", "thermos", "zojirushi", "tiger_jp", "skater_jp",
+    "babybjorn", "ergobaby", "aprica", "aprica_jp", "leapfrog",
+    "fisherprice", "graco_jp", "joie_jp", "cybex_jp",
+    "grosmimi", "grosmimi_jp", "grosmimi_japan",
+}
 
 # Search queries to find relevant tweets (rotated)
 DEFAULT_QUERIES = [
@@ -159,6 +170,89 @@ def get_replied_tweet_ids() -> set[str]:
     """Get set of tweet IDs we've already replied to."""
     log = load_engage_log()
     return {r.get("target_tweet_id") for r in log.get("replies", [])}
+
+
+def get_replied_usernames() -> set[str]:
+    """Get set of usernames we've already replied to (don't repeat)."""
+    log = load_engage_log()
+    return {r.get("target_username", "").lower() for r in log.get("replies", [])}
+
+
+def get_user_info(api, username: str) -> dict | None:
+    """Fetch user profile from Twitter API."""
+    try:
+        resp = api.get_user(
+            username=username,
+            user_fields=["public_metrics", "description", "name"],
+        )
+        if resp.data:
+            u = resp.data
+            return {
+                "username": username,
+                "name": u.name,
+                "description": u.description or "",
+                "followers": u.public_metrics.get("followers_count", 0),
+            }
+    except Exception as e:
+        logger.warning(f"get_user_info failed for @{username}: {e}")
+    return None
+
+
+def is_likely_female_japanese(user_info: dict) -> bool:
+    """Use Claude to judge if the account is likely a Japanese female user."""
+    import anthropic
+    name = user_info.get("name", "")
+    bio = user_info.get("description", "")
+    username = user_info.get("username", "")
+
+    prompt = f"""以下のTwitterアカウントが「日本人女性（ママ含む）」かどうか判定してください。
+名前: {name}
+ユーザー名: @{username}
+プロフィール: {bio}
+
+判定基準:
+- 女性らしい名前・プロフィール → YES
+- 男性名・男性っぽい → NO
+- 企業・ブランド・bot → NO
+- 不明・中性的 → YES（疑わしい場合は送る）
+
+YESまたはNOだけ答えてください。"""
+
+    try:
+        client = anthropic.Anthropic(api_key=os.getenv("ANTHROPIC_API_KEY"))
+        resp = client.messages.create(
+            model=MODEL,
+            max_tokens=10,
+            messages=[{"role": "user", "content": prompt}],
+        )
+        answer = resp.content[0].text.strip().upper()
+        return "NO" not in answer
+    except Exception:
+        return True  # 判定できない場合は送る
+
+
+def should_engage(user_info: dict, replied_usernames: set[str]) -> tuple[bool, str]:
+    """エンゲージするかどうかを判定する。理由も返す。"""
+    username = user_info.get("username", "").lower()
+    followers = user_info.get("followers", 0)
+
+    # 同じ人に送らない
+    if username in replied_usernames:
+        return False, "already replied"
+
+    # 競合・自社アカウントはスキップ
+    if username in BLOCKED_ACCOUNTS:
+        return False, "blocked account"
+
+    # フォロワー100人未満はスキップ
+    if followers < MIN_FOLLOWERS:
+        return False, f"too few followers ({followers})"
+
+    # 男性・企業はスキップ
+    if not is_likely_female_japanese(user_info):
+        return False, "not female/Japanese"
+
+    return True, "ok"
 
 
 def search_tweets(query: str) -> list[dict]:
@@ -341,7 +435,7 @@ def run_engagement(
         all_tweets.extend(tweets)
         time.sleep(2)
 
-    # Filter already replied
+    # Filter already replied tweets
     new_tweets = [t for t in all_tweets if t["tweet_id"] not in replied_ids]
 
     if not new_tweets:
@@ -352,16 +446,33 @@ def run_engagement(
     print(f"Will reply to max {max_replies}")
     print(f"{'='*60}")
 
+    # Load Twitter API for user info filtering
+    _, api = create_twitter_clients()
+    replied_usernames = get_replied_usernames()
+
     results = []
     reply_count = 0
 
-    for tweet in new_tweets[:max_replies * 2]:  # Search more, post fewer
+    for tweet in new_tweets[:max_replies * 4]:  # Check more candidates
         if reply_count >= max_replies:
             break
 
         print(f"\n--- Target Tweet ---")
         print(f"  @{tweet['username']}: {tweet['description'][:80]}...")
         print(f"  URL: {tweet['url']}")
+
+        # Fetch user info and apply filters
+        user_info = get_user_info(api, tweet["username"])
+        if not user_info:
+            print("  (skipped: could not fetch user info)")
+            continue
+
+        ok, reason = should_engage(user_info, replied_usernames)
+        if not ok:
+            print(f"  (skipped: {reason})")
+            continue
+
+        print(f"  Followers: {user_info['followers']} ✅")
 
         # Generate reply
         reply_text = generate_reply(tweet)
