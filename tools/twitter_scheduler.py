@@ -423,6 +423,24 @@ def run_slot(slot: int, dry_run: bool = False) -> dict:
     send_result(slot=slot, tweet_url=tweet_url,
                 tweet_text=tweet_jp, tweet_ko=tweet_ko)
 
+    # 監督: 日本語で投稿完了を報告
+    try:
+        import requests as _req
+        _webhook = os.getenv("TEAMS_WEBHOOK_URL") or os.getenv("TEAMS_MASTER_WEBHOOK_URL")
+        if _webhook and tweet_url:
+            _label = "朝の投稿" if slot == 10 else "夜の投稿"
+            _now = get_jst_now().strftime("%H:%M")
+            _msg = (
+                f"📢 **監督報告** {_now} JST\n\n"
+                f"✅ **{slot}:00 {_label}** 投稿完了\n"
+                f"> {tweet_jp[:100]}{'...' if len(tweet_jp) > 100 else ''}\n\n"
+                f"[投稿を確認]({tweet_url})"
+            )
+            _req.post(_webhook, json={"text": _msg}, timeout=10)
+            logger.info(f"Supervisor notified: slot {slot} posted")
+    except Exception as _e:
+        logger.warning(f"Supervisor notify failed: {_e}")
+
     result["status"] = "completed"
     logger.info(f"=== Slot {slot}:00 DONE ({len(result['actions'])} actions) ===")
 
