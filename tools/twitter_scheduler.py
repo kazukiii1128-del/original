@@ -333,54 +333,12 @@ def run_slot(slot: int, dry_run: bool = False) -> dict:
             logger.info(f"[DRY RUN] Reply #{i} to @{r.get('target_username','?')}: {r.get('reply_jp','')[:60]}...")
         return {"status": "dry_run", "tweet": tweet_jp, "replies": len(replies)}
 
-    # ── Step 2: Check Excel tweet approval (poll until confirmed or timeout) ──
-    logger.info(f"Checking Excel for slot {slot} tweet confirmation...")
-
-    confirmed = False
-    wait_seconds = APPROVAL_WAIT_MINUTES * 60
-    check_interval = 30
-    elapsed = 0
-
-    while elapsed < wait_seconds:
-        excel_result = _check_excel_for_slot(slot)
-        action = excel_result["action"]
-        alt_text = excel_result.get("alt_text", "")
-
-        if action == "approve":
-            logger.info("Tweet CONFIRMED via Excel")
-            confirmed = True
-            break
-
-        elif action == "cancel":
-            logger.info("Tweet DECLINED (no alternative) — skipping")
-            send_action_plan(
-                slot=slot,
-                tweet_text=f"⏭️ {slot}:00 Declined (스킵)",
-                tweet_ko="Declined 처리되어 스킵됩니다.",
-            )
-            return {"status": "cancelled", "reason": "declined"}
-
-        elif action == "replace":
-            logger.info(f"Tweet DECLINED + alt text: {alt_text[:60]}...")
-            tweet_jp = alt_text
-            tweet_ko = ""
-            confirmed = True
-            break
-
-        else:
-            if elapsed == 0:
-                logger.info(f"No review yet. Waiting up to {APPROVAL_WAIT_MINUTES}min...")
-            time.sleep(check_interval)
-            elapsed += check_interval
-
-        if CANCEL_FILE.exists():
-            logger.info("CANCELLED by local cancel file")
-            CANCEL_FILE.unlink()
-            return {"status": "cancelled"}
+    # ── Step 2: Auto-post (no approval required) ──────────────────────────────
+    logger.info(f"Slot {slot}: auto-posting (no approval required)")
+    confirmed = True
 
     if not confirmed:
-        # No Confirmed within timeout → skip (opt-in model: explicit approval required)
-        logger.info(f"Slot {slot}: No Confirmed after {APPROVAL_WAIT_MINUTES}min → skipping.")
+        logger.info(f"Slot {slot}: skipped.")
         return {"status": "skipped", "reason": "no confirmation"}
 
     # ── Step 3: Post tweet ─────────────────────────────────────────────────
