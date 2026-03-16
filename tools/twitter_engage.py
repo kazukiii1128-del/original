@@ -85,14 +85,14 @@ BLOCKED_ACCOUNTS = {
 
 # Search queries to find relevant tweets (rotated)
 DEFAULT_QUERIES = [
-    "ストローマグ 育児 site:x.com",
-    "ストローマグ 漏れる site:x.com",
-    "赤ちゃん マグ おすすめ site:x.com",
-    "離乳食 ストロー 練習 site:x.com",
-    "育児あるある マグ site:x.com",
-    "ストローマグ いつから site:x.com",
-    "PPSU マグ site:x.com",
-    "育児グッズ おすすめ ストロー site:x.com",
+    "1歳 ストローマグ site:x.com",
+    "1歳10ヶ月 育児 site:x.com",
+    "イヤイヤ期 1歳 site:x.com",
+    "幼児食 1歳 site:x.com",
+    "1歳 育児あるある site:x.com",
+    "ストローマグ 漏れない site:x.com",
+    "PPSU マグ 1歳 site:x.com",
+    "1歳 コップ飲み site:x.com",
 ]
 
 # ── Reply Persona Prompt ─────────────────────────────────────────────────
