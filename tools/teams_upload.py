@@ -262,6 +262,62 @@ def _send_upload_notification(file_info, message=""):
         logger.warning(f"Teams notification failed: {resp.status_code}")
 
 
+# ── Plan JSON sync (upload/download for GitHub Actions) ───────────────────────
+
+def upload_plan_json(local_path: str, date_str: str) -> bool:
+    """Upload a daily plan JSON to SharePoint plans/ subfolder.
+
+    Args:
+        local_path: path to the local JSON file
+        date_str: "YYYY-MM-DD" used as filename key
+
+    Returns:
+        True on success, False on failure
+    """
+    path = Path(local_path)
+    if not path.exists():
+        logger.warning(f"Plan JSON not found: {local_path}")
+        return False
+    try:
+        drive_id, folder_id = _get_channel_drive_folder()
+        upload_path = f"plans/daily_tweet_plan_{date_str}.json"
+        _simple_upload(drive_id, folder_id, upload_path, path)
+        logger.info(f"Plan JSON uploaded: {upload_path}")
+        return True
+    except Exception as e:
+        logger.warning(f"Plan JSON upload failed for {date_str}: {e}")
+        return False
+
+
+def download_plan_json(date_str: str, local_path: str) -> bool:
+    """Download a daily plan JSON from SharePoint plans/ subfolder.
+
+    Args:
+        date_str: "YYYY-MM-DD"
+        local_path: where to save the downloaded file
+
+    Returns:
+        True on success, False if not found or error
+    """
+    try:
+        drive_id, folder_id = _get_channel_drive_folder()
+        filename = f"daily_tweet_plan_{date_str}.json"
+        url = f"{GRAPH_BASE}/drives/{drive_id}/items/{folder_id}:/plans/{filename}:/content"
+        resp = requests.get(url, headers=_graph_headers(), timeout=15)
+        if resp.status_code == 404:
+            logger.info(f"Plan JSON not on SharePoint: {filename}")
+            return False
+        resp.raise_for_status()
+        Path(local_path).parent.mkdir(parents=True, exist_ok=True)
+        with open(local_path, "wb") as f:
+            f.write(resp.content)
+        logger.info(f"Plan JSON downloaded: {filename} → {local_path}")
+        return True
+    except Exception as e:
+        logger.warning(f"Plan JSON download failed for {date_str}: {e}")
+        return False
+
+
 # ── Utility ───────────────────────────────────────────────────────────────────
 
 def list_channel_files(subfolder: str = "") -> list[dict]:

@@ -105,10 +105,17 @@ def get_jst_now() -> datetime:
 
 
 def _plan_path(date_str: str = None) -> Path:
-    """Get date-specific plan file path."""
+    """Get date-specific plan file path. Downloads from SharePoint if not local."""
     if not date_str:
         date_str = get_jst_now().strftime("%Y-%m-%d")
-    return TMP_DIR / f"daily_tweet_plan_{date_str}.json"
+    local = TMP_DIR / f"daily_tweet_plan_{date_str}.json"
+    if not local.exists():
+        try:
+            from teams_upload import download_plan_json
+            download_plan_json(date_str, str(local))
+        except Exception as e:
+            logger.warning(f"SharePoint plan download failed: {e}")
+    return local
 
 
 def generate_tweet(slot: int) -> tuple[str, str]:
@@ -694,12 +701,17 @@ def generate_weekly_plans(start_offset: int = 1):
             logger.warning(f"{target_str} plan generation failed — skipping")
             continue
 
-        # Save plan JSON so run_slot can load it later
+        # Save plan JSON locally and upload to SharePoint for GitHub Actions
         plan_file = TMP_DIR / f"daily_tweet_plan_{target_str}.json"
         TMP_DIR.mkdir(parents=True, exist_ok=True)
         with open(plan_file, "w", encoding="utf-8") as _f:
             import json as _json
             _json.dump(plan, _f, ensure_ascii=False, indent=2)
+        try:
+            from teams_upload import upload_plan_json
+            upload_plan_json(str(plan_file), target_str)
+        except Exception as _e:
+            logger.warning(f"SharePoint plan upload failed for {target_str}: {_e}")
 
         # Step 2: Generate reply drafts for slots with engage_count > 0
         reply_slots = [s for s in SLOTS if SLOT_CONFIG.get(s, {}).get("engage_count", 0) > 0]
