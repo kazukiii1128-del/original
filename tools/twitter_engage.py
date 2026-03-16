@@ -488,10 +488,11 @@ def run_engagement(
         if reply_count >= max_replies:
             break
 
-        # 2026年以降のツイートのみ
+        # 当日のツイートのみ
         tweet_date = get_tweet_date(tweet["tweet_id"])
-        if tweet_date and tweet_date < MIN_TWEET_DATE:
-            continue  # 古いツイートはスキップ（表示なし）
+        today_jst = datetime.now(JST).date()
+        if not tweet_date or tweet_date.astimezone(JST).date() != today_jst:
+            continue  # 今日以外はスキップ（表示なし）
 
         print(f"\n--- Target Tweet ---")
         print(f"  @{tweet['username']}: {tweet['description'][:80]}...")
