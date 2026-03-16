@@ -178,24 +178,15 @@ def get_replied_usernames() -> set[str]:
     return {r.get("target_username", "").lower() for r in log.get("replies", [])}
 
 
-def get_user_info(api, username: str) -> dict | None:
-    """Fetch user profile from Twitter API."""
-    try:
-        resp = api.get_user(
-            username=username,
-            user_fields=["public_metrics", "description", "name"],
-        )
-        if resp.data:
-            u = resp.data
-            return {
-                "username": username,
-                "name": u.name,
-                "description": u.description or "",
-                "followers": u.public_metrics.get("followers_count", 0),
-            }
-    except Exception as e:
-        logger.warning(f"get_user_info failed for @{username}: {e}")
-    return None
+def get_user_info(api, username: str, tweet_info: dict = None) -> dict | None:
+    """Build user info from available search data (Free tier: user lookup API not available)."""
+    tweet_info = tweet_info or {}
+    return {
+        "username": username,
+        "name": username,
+        "description": tweet_info.get("description", "") or tweet_info.get("title", ""),
+        "followers": MIN_FOLLOWERS,  # assume OK — follower check not available on Free tier
+    }
 
 
 def is_likely_female_japanese(user_info: dict) -> bool:
@@ -341,6 +332,34 @@ def translate_to_korean(text: str) -> str:
         return "(번역 불가)"
 
 
+def notify_supervisor(tweet_info: dict, reply_text: str, reply_url: str) -> None:
+    """コメント投稿をTeamsに報告する（監督係）。"""
+    import requests
+
+    webhook_url = os.getenv("TEAMS_WEBHOOK_URL") or os.getenv("TEAMS_MASTER_WEBHOOK_URL")
+    if not webhook_url:
+        return
+
+    now = datetime.now(JST).strftime("%H:%M")
+    target_url = tweet_info.get("url", "")
+    target_text = (tweet_info.get("description", "") or tweet_info.get("title", ""))[:80]
+    username = tweet_info.get("username", "")
+
+    message = (
+        f"💬 **コメンター報告** {now} JST\n\n"
+        f"**送信先:** [@{username}]({target_url})\n"
+        f"> {target_text}\n\n"
+        f"**送ったコメント:**\n> {reply_text}\n\n"
+        f"[投稿を確認]({reply_url})"
+    )
+
+    try:
+        requests.post(webhook_url, json={"text": message}, timeout=10)
+        logger.info("Supervisor notified via Teams")
+    except Exception as e:
+        logger.warning(f"Teams notify failed: {e}")
+
+
 def post_reply(tweet_id: str, reply_text: str, username: str = "", dry_run: bool = False) -> dict:
     """Post engagement to a tweet. Tries reply → mention fallback.
 
@@ -462,7 +481,7 @@ def run_engagement(
         print(f"  URL: {tweet['url']}")
 
         # Fetch user info and apply filters
-        user_info = get_user_info(api, tweet["username"])
+        user_info = get_user_info(api, tweet["username"], tweet_info=tweet)
         if not user_info:
             print("  (skipped: could not fetch user info)")
             continue
@@ -493,6 +512,11 @@ def run_engagement(
 
         if result["status"] in ("published", "dry_run"):
             reply_count += 1
+
+            # Notify supervisor via Teams
+            if result["status"] == "published" and result.get("reply_id"):
+                reply_url = f"https://x.com/grosmimi_japan/status/{result['reply_id']}"
+                notify_supervisor(tweet, reply_text, reply_url)
 
             # Log
             log_entry = {
