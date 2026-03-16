@@ -488,11 +488,10 @@ def run_engagement(
         if reply_count >= max_replies:
             break
 
-        # 当日のツイートのみ
+        # 直近24時間以内のツイートのみ
         tweet_date = get_tweet_date(tweet["tweet_id"])
-        today_jst = datetime.now(JST).date()
-        if not tweet_date or tweet_date.astimezone(JST).date() != today_jst:
-            continue  # 今日以外はスキップ（表示なし）
+        if not tweet_date or (datetime.now(timezone.utc) - tweet_date).total_seconds() > 86400:
+            continue  # 24時間超えはスキップ
 
         print(f"\n--- Target Tweet ---")
         print(f"  @{tweet['username']}: {tweet['description'][:80]}...")
