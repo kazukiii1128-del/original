@@ -62,31 +62,28 @@ BRANDS = {
 
 def search_brand_tweets(brand: dict, limit: int = 10) -> list[dict]:
     """Firecrawlでブランドの最新ツイートを検索する。"""
-    output_file = FIRECRAWL_DIR / "research_tmp.json"
-    FIRECRAWL_DIR.mkdir(parents=True, exist_ok=True)
+    from firecrawl import FirecrawlApp
 
-    query = brand["query"]
-    cmd = f'firecrawl search "{query}" --limit {limit} -o "{output_file}" --json'
+    api_key = os.getenv("FIRECRAWL_API_KEY")
+    if not api_key:
+        logger.warning("FIRECRAWL_API_KEY not set")
+        return []
 
     try:
-        result = subprocess.run(
-            cmd, shell=True, capture_output=True, text=True, timeout=30,
-            cwd=str(PROJECT_ROOT),
-        )
-        if output_file.exists():
-            with open(output_file, "r", encoding="utf-8") as f:
-                data = json.load(f)
+        app = FirecrawlApp(api_key=api_key)
+        result = app.search(brand["query"], limit=limit)
+        items = result.get("data", [])
 
-            tweets = []
-            for item in data.get("data", {}).get("web", []):
-                url = item.get("url", "")
-                if "x.com" in url and "/status/" in url:
-                    tweets.append({
-                        "url": url,
-                        "title": item.get("title", ""),
-                        "description": item.get("description", ""),
-                    })
-            return tweets
+        tweets = []
+        for item in items:
+            url = item.get("url", "")
+            if "x.com" in url and "/status/" in url:
+                tweets.append({
+                    "url": url,
+                    "title": item.get("title", ""),
+                    "description": item.get("description", ""),
+                })
+        return tweets
     except Exception as e:
         logger.warning(f"Search failed for {brand['name']}: {e}")
 

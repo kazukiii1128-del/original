@@ -4,6 +4,7 @@ beautifulsoup4
 anthropic
 openpyxl
 tweepy>=4.14.0
+firecrawl-py
 
 # Google integrations (uncomment as needed)
 # google-auth

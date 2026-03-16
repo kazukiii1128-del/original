@@ -133,7 +133,9 @@ def extract_tweet_ids(search_results: dict) -> list[dict]:
     tweets = []
     seen_ids = set()
 
-    for item in search_results.get("data", {}).get("web", []):
+    raw = search_results.get("data", [])
+    items = raw if isinstance(raw, list) else raw.get("web", [])
+    for item in items:
         url = item.get("url", "")
         # Match x.com/username/status/tweet_id pattern
         match = re.search(r'x\.com/(\w+)/status/(\d+)', url)
@@ -260,21 +262,18 @@ def should_engage(user_info: dict, replied_usernames: set[str]) -> tuple[bool, s
 
 def search_tweets(query: str) -> list[dict]:
     """Search for tweets using Firecrawl."""
-    output_file = FIRECRAWL_DIR / "engage_search_tmp.json"
-    FIRECRAWL_DIR.mkdir(parents=True, exist_ok=True)
+    from firecrawl import FirecrawlApp
 
-    cmd = f'firecrawl search "{query}" --limit 10 -o "{output_file}" --json'
+    api_key = os.getenv("FIRECRAWL_API_KEY")
+    if not api_key:
+        logger.error("FIRECRAWL_API_KEY not set")
+        return []
+
     logger.info(f"Searching: {query}")
-
     try:
-        result = subprocess.run(
-            cmd, shell=True, capture_output=True, text=True, timeout=30,
-            cwd=str(PROJECT_ROOT),
-        )
-        if output_file.exists():
-            with open(output_file, "r", encoding="utf-8") as f:
-                data = json.load(f)
-            return extract_tweet_ids(data)
+        app = FirecrawlApp(api_key=api_key)
+        result = app.search(query, limit=10)
+        return extract_tweet_ids(result)
     except Exception as e:
         logger.error(f"Search failed: {e}")
 
