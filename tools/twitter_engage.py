@@ -85,14 +85,16 @@ BLOCKED_ACCOUNTS = {
 
 # Search queries to find relevant tweets (rotated)
 DEFAULT_QUERIES = [
-    "1歳 ストローマグ site:x.com",
-    "1歳10ヶ月 育児 site:x.com",
-    "イヤイヤ期 1歳 site:x.com",
-    "幼児食 1歳 site:x.com",
-    "1歳 育児あるある site:x.com",
-    "ストローマグ 漏れない site:x.com",
-    "PPSU マグ 1歳 site:x.com",
-    "1歳 コップ飲み site:x.com",
+    "1歳 育児 ママ site:x.com",
+    "1歳10ヶ月 ママ site:x.com",
+    "イヤイヤ期 ママ site:x.com",
+    "幼児食 育児ママ site:x.com",
+    "1歳 育児あるある ママ site:x.com",
+    "ストローマグ ママ site:x.com",
+    "PPSU マグ ママ site:x.com",
+    "1歳 コップ飲み ママ site:x.com",
+    "育児 ママあるある site:x.com",
+    "赤ちゃん ストロー ママ site:x.com",
 ]
 
 # ── Reply Persona Prompt ─────────────────────────────────────────────────
@@ -220,22 +222,25 @@ def get_user_info(api, username: str, tweet_info: dict = None) -> dict | None:
 
 
 def is_likely_female_japanese(user_info: dict) -> bool:
-    """Use Claude to judge if the account is likely a Japanese female user."""
+    """Use Claude to judge if the account is likely a Japanese mama."""
     import anthropic
     name = user_info.get("name", "")
     bio = user_info.get("description", "")
     username = user_info.get("username", "")
+    tweet_text = user_info.get("tweet_text", "")
 
-    prompt = f"""以下のTwitterアカウントが「日本人女性（ママ含む）」かどうか判定してください。
+    prompt = f"""以下のTwitterアカウントが「日本人ママ（子育て中の女性）」かどうか判定してください。
 名前: {name}
 ユーザー名: @{username}
 プロフィール: {bio}
+ツイート内容: {tweet_text}
 
 判定基準:
-- 女性らしい名前・プロフィール → YES
-- 男性名・男性っぽい → NO
-- 企業・ブランド・bot → NO
-- 不明・中性的 → YES（疑わしい場合は送る）
+- ママ・母・育児・子供・赤ちゃん・妊娠などの言及 → YES
+- 女性らしい名前＋育児系ツイート → YES
+- 男性名・パパ・父・男性っぽい → NO
+- 企業・ブランド・bot・ショップ系 → NO
+- 不明・判断できない → NO（確信がない場合は送らない）
 
 YESまたはNOだけ答えてください。"""
 
@@ -247,9 +252,9 @@ YESまたはNOだけ答えてください。"""
             messages=[{"role": "user", "content": prompt}],
         )
         answer = resp.content[0].text.strip().upper()
-        return "NO" not in answer
+        return answer.startswith("YES")
     except Exception:
-        return True  # 判定できない場合は送る
+        return False  # 判定できない場合は送らない
 
 
 def should_engage(user_info: dict, replied_usernames: set[str]) -> tuple[bool, str]:
@@ -501,7 +506,7 @@ def run_engagement(
     results = []
     reply_count = 0
 
-    for tweet in new_tweets[:max_replies * 4]:  # Check more candidates
+    for tweet in new_tweets:  # Check all candidates
         if reply_count >= max_replies:
             break
 
@@ -517,6 +522,8 @@ def run_engagement(
 
         # Fetch user info and apply filters
         user_info = get_user_info(api, tweet["username"], tweet_info=tweet)
+        if user_info:
+            user_info["tweet_text"] = tweet.get("description", tweet.get("title", ""))
         if not user_info:
             print("  (skipped: could not fetch user info)")
             continue
