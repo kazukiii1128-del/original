@@ -134,13 +134,15 @@ def extract_tweet_ids(search_results) -> list[dict]:
     seen_ids = set()
 
     # Handle both dict response and SearchData object (newer SDK)
-    if hasattr(search_results, "data"):
+    if hasattr(search_results, "web"):
+        raw = search_results.web or []
+    elif hasattr(search_results, "data"):
         raw = search_results.data or []
     elif isinstance(search_results, dict):
-        raw = search_results.get("data", [])
+        raw = search_results.get("data", search_results.get("web", []))
     else:
         raw = []
-    items = raw if isinstance(raw, list) else (raw.get("web", []) if isinstance(raw, dict) else [])
+    items = raw if isinstance(raw, list) else []
     for item in items:
         # Support both dict and object (SearchResult)
         if isinstance(item, dict):
@@ -503,10 +505,10 @@ def run_engagement(
         if reply_count >= max_replies:
             break
 
-        # 直近24時間以内のツイートのみ
+        # 直近30日以内のツイートのみ
         tweet_date = get_tweet_date(tweet["tweet_id"])
-        if not tweet_date or (datetime.now(timezone.utc) - tweet_date).total_seconds() > 86400:
-            continue  # 24時間超えはスキップ
+        if not tweet_date or (datetime.now(timezone.utc) - tweet_date).total_seconds() > 86400 * 30:
+            continue  # 30日超えはスキップ
 
         print(f"\n--- Target Tweet ---")
         print(f"  @{tweet['username']}: {tweet['description'][:80]}...")

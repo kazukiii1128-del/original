@@ -72,11 +72,13 @@ def search_brand_tweets(brand: dict, limit: int = 10) -> list[dict]:
     try:
         app = FirecrawlApp(api_key=api_key)
         result = app.search(brand["query"], limit=limit)
-        # Handle both dict response and SearchData object (newer SDK)
-        if hasattr(result, "data"):
+        # Handle both dict response and SearchData object (newer SDK uses .web)
+        if hasattr(result, "web"):
+            items = result.web or []
+        elif hasattr(result, "data"):
             items = result.data or []
         else:
-            items = result.get("data", []) if isinstance(result, dict) else []
+            items = result.get("web", result.get("data", [])) if isinstance(result, dict) else []
 
         tweets = []
         for item in items:
