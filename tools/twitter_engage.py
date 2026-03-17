@@ -484,7 +484,9 @@ def run_engagement(
 
     if not new_tweets:
         print("No new tweets found to reply to")
-        return {"status": "no_targets", "searched": len(queries)}
+        session_result = {"status": "no_targets", "searched": len(queries), "queries": queries, "results": []}
+        _save_engage_excel(session_result)
+        return session_result
 
     print(f"\nFound {len(new_tweets)} new tweets to engage with")
     print(f"Will reply to max {max_replies}")
@@ -582,12 +584,92 @@ def run_engagement(
     print(f"Session complete: {reply_count} replies posted")
     print(f"Today total: {today_count + reply_count}/{DAILY_REPLY_LIMIT}")
 
-    return {
+    session_result = {
         "status": "ok",
         "replies_posted": reply_count,
         "today_total": today_count + reply_count,
+        "queries": queries,
         "results": results,
     }
+    _save_engage_excel(session_result)
+    return session_result
+
+
+def _save_engage_excel(session: dict) -> None:
+    """コメンター実行結果をExcelにまとめてTeamsにアップロードする。"""
+    try:
+        import openpyxl
+        from openpyxl.styles import Font, PatternFill, Alignment
+
+        wb = openpyxl.Workbook()
+        ws = wb.active
+        ws.title = "コメンター実行ログ"
+
+        # ヘッダー
+        headers = ["実行日時", "@ユーザー", "対象ツイートURL", "対象テキスト", "返信内容", "ステータス"]
+        header_fill = PatternFill(start_color="1F4E79", end_color="1F4E79", fill_type="solid")
+        header_font = Font(color="FFFFFF", bold=True)
+        for col, h in enumerate(headers, 1):
+            cell = ws.cell(row=1, column=col, value=h)
+            cell.fill = header_fill
+            cell.font = header_font
+            cell.alignment = Alignment(horizontal="center")
+
+        results = session.get("results", [])
+        now_str = datetime.now(JST).strftime("%Y-%m-%d %H:%M")
+
+        if results:
+            fill = PatternFill(start_color="DEEAF1", end_color="DEEAF1", fill_type="solid")
+            for r_idx, r in enumerate(results, 2):
+                values = [
+                    r.get("replied_at", now_str)[:16],
+                    r.get("target_username", ""),
+                    r.get("target_url", ""),
+                    r.get("target_text", "")[:100],
+                    r.get("reply_text", ""),
+                    r.get("status", ""),
+                ]
+                for col, v in enumerate(values, 1):
+                    cell = ws.cell(row=r_idx, column=col, value=v)
+                    cell.fill = fill
+                    cell.alignment = Alignment(wrap_text=True)
+        else:
+            # ツイートなし行
+            queries = session.get("queries", [])
+            status_text = "ツイートが見つかりませんでした"
+            fill = PatternFill(start_color="FFF2CC", end_color="FFF2CC", fill_type="solid")
+            values = [now_str, "—", "—", f"検索クエリ: {', '.join(queries)}", "—", status_text]
+            for col, v in enumerate(values, 1):
+                cell = ws.cell(row=2, column=col, value=v)
+                cell.fill = fill
+                cell.alignment = Alignment(wrap_text=True)
+
+        # 列幅
+        for col, width in zip(["A", "B", "C", "D", "E", "F"], [18, 18, 45, 50, 60, 16]):
+            ws.column_dimensions[col].width = width
+
+        TMP_DIR.mkdir(parents=True, exist_ok=True)
+        date_str = datetime.now(JST).strftime("%Y-%m-%d")
+        path = TMP_DIR / f"twitter_engage_{date_str}.xlsx"
+        wb.save(path)
+        logger.info(f"Engage Excel saved: {path}")
+
+        # TeamsにアップロードorNotify
+        try:
+            from teams_upload import upload_file
+            reply_count = len(results)
+            msg = (
+                f"💬 {date_str} コメンター実行完了 — {reply_count}件返信"
+                if reply_count else
+                f"💬 {date_str} コメンター実行 — 対象ツイートなし（Excelで確認）"
+            )
+            upload_file(str(path), notify=True, message=msg)
+            logger.info("Engage Excel uploaded to Teams")
+        except Exception as e:
+            logger.warning(f"Teams upload failed: {e}")
+
+    except Exception as e:
+        logger.warning(f"Engage Excel creation failed: {e}")
 
 
 def show_history():
