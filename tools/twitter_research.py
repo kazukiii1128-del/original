@@ -72,16 +72,20 @@ def search_brand_tweets(brand: dict, limit: int = 10) -> list[dict]:
     try:
         app = FirecrawlApp(api_key=api_key)
         result = app.search(brand["query"], limit=limit)
-        items = result.get("data", [])
+        # Handle both dict response and SearchData object (newer SDK)
+        if hasattr(result, "data"):
+            items = result.data or []
+        else:
+            items = result.get("data", []) if isinstance(result, dict) else []
 
         tweets = []
         for item in items:
-            url = item.get("url", "")
+            url = item.get("url", "") if isinstance(item, dict) else getattr(item, "url", "")
             if "x.com" in url and "/status/" in url:
                 tweets.append({
                     "url": url,
-                    "title": item.get("title", ""),
-                    "description": item.get("description", ""),
+                    "title": item.get("title", "") if isinstance(item, dict) else getattr(item, "title", ""),
+                    "description": item.get("description", "") if isinstance(item, dict) else getattr(item, "description", ""),
                 })
         return tweets
     except Exception as e:
