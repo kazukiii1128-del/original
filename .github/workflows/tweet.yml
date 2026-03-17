@@ -2,7 +2,7 @@ name: ツイート
 
 on:
   schedule:
-    - cron: '0 1  * * *'
+    - cron: '0 1 * * *'
     - cron: '0 10 * * *'
   workflow_dispatch:
 
@@ -10,7 +10,7 @@ jobs:
   tweet-10:
     name: ツイート 10:00 JST
     runs-on: ubuntu-latest
-    if: github.event_name == 'workflow_dispatch' || github.event.schedule == '0 1  * * *'
+    if: github.event_name == 'workflow_dispatch' || github.event.schedule == '0 1 * * *'
     env:
       ANTHROPIC_API_KEY:            ${{ secrets.ANTHROPIC_API_KEY }}
       TWITTER_API_KEY:              ${{ secrets.TWITTER_API_KEY }}
