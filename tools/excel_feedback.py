@@ -169,6 +169,7 @@ def _get_today_sheet_names(wb) -> tuple:
     jst = timezone(timedelta(hours=9))
     today_str = datetime.now(jst).strftime("%m-%d")
 
+    logger.info(f"Looking for sheet starting with '{today_str}' in: {wb.sheetnames}")
     for sheet_name in wb.sheetnames:
         if sheet_name.startswith(today_str) and "_リプ" not in sheet_name:
             tweet_sheet = sheet_name
@@ -177,6 +178,7 @@ def _get_today_sheet_names(wb) -> tuple:
             return tweet_sheet, reply_sheet
 
     # Fall back to daily format
+    logger.info(f"No sheet matching '{today_str}' — falling back to '내 트윗'")
     return "내 트윗", "리플 계획"
 
 
@@ -230,8 +232,11 @@ def read_feedback(excel_path: str) -> list[dict]:
                 if slot == 0:
                     continue
 
-                approval = str(ws.cell(row=row, column=col_map["approval"]).value or "").strip()
+                raw_approval = ws.cell(row=row, column=col_map["approval"]).value
+                approval = str(raw_approval or "").strip()
                 alt_text = str(ws.cell(row=row, column=col_map.get("alt", 99)).value or "").strip() if "alt" in col_map else ""
+
+                logger.info(f"  Row {row} slot={slot}: approval raw={repr(raw_approval)} → '{approval}'")
 
                 action = _resolve_action(approval, alt_text)
                 if not action:

@@ -196,16 +196,19 @@ def _check_excel_for_slot(slot: int) -> dict:
             return {"action": "pending", "alt_text": ""}
 
         feedbacks = read_feedback(excel_path)
+        logger.info(f"Excel feedbacks found: {[(fb['slot'], fb['action'], fb['sheet']) for fb in feedbacks]}")
         for fb in feedbacks:
             if fb["slot"] == slot and fb["sheet"] == "내 트윗":
+                logger.info(f"Slot {slot} approval: {fb['action']}")
                 return {
                     "action": fb["action"],
                     "alt_text": fb.get("alt_text", ""),
                 }
 
+        logger.info(f"No approval row found for slot {slot} in Excel")
         return {"action": "pending", "alt_text": ""}
     except Exception as e:
-        logger.warning(f"Excel check failed: {e}")
+        logger.warning(f"Excel check failed: {e}", exc_info=True)
         return {"action": "pending", "alt_text": ""}
 
 
@@ -283,6 +286,26 @@ def _regenerate_with_feedback(slot: int, instruction: str) -> tuple[str, str]:
     return tweet_jp, tweet_ko
 
 
+def _notify_skip(slot: int, reason: str, tweet_jp: str = ""):
+    """Send a Teams notification when a tweet slot is skipped."""
+    try:
+        import requests as _req
+        _webhook = os.getenv("TEAMS_WEBHOOK_URL") or os.getenv("TEAMS_MASTER_WEBHOOK_URL")
+        if not _webhook:
+            return
+        _label = "朝の投稿" if slot == 10 else "夜の投稿"
+        _preview = f"\n> {tweet_jp[:80]}{'...' if len(tweet_jp) > 80 else ''}" if tweet_jp else ""
+        _msg = (
+            f"⚠️ **監督報告** — {slot}:00 {_label} スキップ\n\n"
+            f"**理由**: {reason}{_preview}\n\n"
+            f"Excelの{slot}:00行でConfirmedを選択してください。"
+        )
+        _req.post(_webhook, json={"text": _msg}, timeout=10)
+        logger.info(f"Skip notification sent for slot {slot}")
+    except Exception as _e:
+        logger.warning(f"Skip notify failed: {_e}")
+
+
 def run_slot(slot: int, dry_run: bool = False) -> dict:
     """Execute a slot: check Excel → post tweet + replies if confirmed.
 
@@ -336,6 +359,7 @@ def run_slot(slot: int, dry_run: bool = False) -> dict:
     # ── Step 2: Check Excel approval (once) ───────────────────────────────────
     logger.info(f"Checking Excel approval for slot {slot}...")
     confirmed = False
+    skip_reason = ""
     try:
         excel_result = _check_excel_for_slot(slot)
         action = excel_result["action"]
@@ -351,13 +375,32 @@ def run_slot(slot: int, dry_run: bool = False) -> dict:
             confirmed = True
         elif action == "cancel":
             logger.info("Tweet DECLINED — skipping")
+            _notify_skip(slot, "❌ Declined（却下）", tweet_jp)
             return {"status": "cancelled", "reason": "declined"}
         else:
             logger.info("No approval found — skipping")
+            skip_reason = "Excelの承認列が空欄（Confirmedが見つかりません）"
     except Exception as e:
         logger.warning(f"Excel check failed: {e} — skipping")
+        skip_reason = f"Excelの読み込みエラー: {e}"
+
+    # ── Step 2b: Fallback — check plan JSON's approved flag ───────────────────
+    if not confirmed and plan_file.exists():
+        try:
+            with open(plan_file, "r", encoding="utf-8") as f:
+                _plan = json.load(f)
+            _slot_data = _plan.get("slots", {}).get(str(slot), {})
+            if _slot_data.get("approved"):
+                logger.info(f"Slot {slot}: approved flag found in plan JSON — posting")
+                confirmed = True
+                # Use alt text from plan JSON if replaced
+                if _slot_data.get("replaced") and _slot_data.get("tweet_jp"):
+                    tweet_jp = _slot_data["tweet_jp"]
+        except Exception as _e:
+            logger.warning(f"Plan JSON fallback check failed: {_e}")
 
     if not confirmed:
+        _notify_skip(slot, skip_reason or "承認なし", tweet_jp)
         return {"status": "skipped", "reason": "no confirmation"}
 
     # ── Step 3: Post tweet ─────────────────────────────────────────────────

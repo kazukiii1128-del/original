@@ -139,6 +139,55 @@ def send_daily_briefing(plan: dict, date_str: dict, approval: dict):
         logger.error(f"Teams notification failed: {e}")
 
 
+def persist_approval_to_plan(date_str: str, approval: dict) -> bool:
+    """Excelの承認状態をプランJSONに書き込んでSharePointに再アップロードする。
+
+    これにより、10:00のツイート投稿時にExcelが読めなくても
+    プランJSONのapprovedフラグでフォールバックできる。
+    """
+    local_path = TMP_DIR / f"daily_tweet_plan_{date_str}.json"
+    if not local_path.exists():
+        logger.info("Plan JSON not found locally — skipping approval persistence")
+        return False
+
+    try:
+        with open(local_path, encoding="utf-8") as f:
+            plan = json.load(f)
+
+        changed = False
+        for slot, action in approval.items():
+            slot_key = str(slot)
+            if slot_key in plan.get("slots", {}):
+                if action == "approve" and not plan["slots"][slot_key].get("approved"):
+                    plan["slots"][slot_key]["approved"] = True
+                    changed = True
+                    logger.info(f"Slot {slot}: approved=True persisted to plan JSON")
+                elif action in ("cancel", "replace"):
+                    if action == "cancel":
+                        plan["slots"][slot_key]["cancelled"] = True
+                    changed = True
+
+        if not changed:
+            return False
+
+        with open(local_path, "w", encoding="utf-8") as f:
+            json.dump(plan, f, ensure_ascii=False, indent=2)
+
+        # Re-upload to SharePoint so tweet runner can download it
+        try:
+            from teams_upload import upload_plan_json
+            upload_plan_json(str(local_path), date_str)
+            logger.info(f"Updated plan JSON re-uploaded to SharePoint for {date_str}")
+            return True
+        except Exception as e:
+            logger.warning(f"Plan JSON re-upload failed: {e}")
+            return False
+
+    except Exception as e:
+        logger.warning(f"Approval persistence failed: {e}")
+        return False
+
+
 def main():
     plan, date_str = get_today_plan()
 
@@ -154,6 +203,10 @@ def main():
         return
 
     approval = get_approval_status(date_str)
+
+    # 承認状態をプランJSONに保存（10:00投稿時のフォールバック用）
+    persist_approval_to_plan(date_str, approval)
+
     send_daily_briefing(plan, date_str, approval)
 
 
