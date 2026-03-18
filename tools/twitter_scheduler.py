@@ -407,15 +407,25 @@ def run_slot(slot: int, dry_run: bool = False) -> dict:
     tweet_url = ""
     if tweet_jp:
         logger.info("Posting tweet...")
-        client, api = create_twitter_clients()
+        try:
+            client, api = create_twitter_clients()
+        except EnvironmentError as e:
+            logger.error(f"Twitter credentials missing: {e}")
+            _notify_skip(slot, f"Twitter認証情報が不足: {e}", tweet_jp)
+            raise
 
         ok, msg = validate_tweet_text(tweet_jp)
         if ok:
-            response = client.create_tweet(text=tweet_jp)
-            tweet_id = response.data["id"]
-            tweet_url = f"https://x.com/grosmimi_japan/status/{tweet_id}"
-            logger.info(f"Posted: {tweet_url}")
-            result["actions"].append({"type": "tweet", "url": tweet_url})
+            try:
+                response = client.create_tweet(text=tweet_jp)
+                tweet_id = response.data["id"]
+                tweet_url = f"https://x.com/grosmimi_japan/status/{tweet_id}"
+                logger.info(f"Posted: {tweet_url}")
+                result["actions"].append({"type": "tweet", "url": tweet_url})
+            except Exception as e:
+                logger.error(f"Tweet posting failed: {type(e).__name__}: {e}")
+                _notify_skip(slot, f"ツイート投稿エラー: {type(e).__name__}: {str(e)[:100]}", tweet_jp)
+                raise
         else:
             logger.error(f"Tweet blocked at post time: {msg}")
 
