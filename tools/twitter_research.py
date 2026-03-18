@@ -49,11 +49,26 @@ BRANDS = {
         {"name": "リッチェル",    "handle": "richell_jp",         "query": "リッチェル マグ site:x.com"},
         {"name": "NUKジャパン",   "handle": "nuk_japan",          "query": "NUK 赤ちゃん site:x.com"},
         {"name": "マンチキン",    "handle": "munchkin_japan",     "query": "マンチキン ベビー site:x.com"},
+        {"name": "ファルスカ",    "handle": "farska_jp",          "query": "ファルスカ ベビー site:x.com"},
+        {"name": "カトージ",      "handle": "katoji_official",    "query": "カトージ 赤ちゃん site:x.com"},
+        {"name": "Joie",          "handle": "joie_japan",         "query": "Joie ベビーカー チャイルドシート site:x.com"},
     ],
-    "参考": [
+    "参考（ベビー）": [
         {"name": "アカチャンホンポ", "handle": "akachanhonpo",     "query": "アカチャンホンポ 育児 site:x.com"},
         {"name": "西松屋",          "handle": "nishimatsuya_com", "query": "西松屋 赤ちゃん site:x.com"},
         {"name": "BABYBJORN",       "handle": "babybjorn",        "query": "BabyBjorn baby site:x.com"},
+        {"name": "エルゴベビー",    "handle": "ergobaby_jp",      "query": "エルゴベビー 抱っこ紐 site:x.com"},
+    ],
+    "参考（Kコスメ・韓国ブランド）": [
+        {"name": "イニスフリー",  "handle": "innisfree_jp",       "query": "イニスフリー innisfree site:x.com"},
+        {"name": "COSRX",         "handle": "cosrx_japan",        "query": "COSRX コスアールエックス site:x.com"},
+        {"name": "Anua",          "handle": "anua_japan",         "query": "Anua アヌア スキンケア site:x.com"},
+        {"name": "Laneige",       "handle": "laneige_jp",         "query": "Laneige ラネージュ site:x.com"},
+    ],
+    "参考（人気ブランドSNS運用）": [
+        {"name": "無印良品",      "handle": "muji_net",           "query": "無印良品 MUJI 育児 暮らし site:x.com"},
+        {"name": "フェリシモ",    "handle": "felissimo",          "query": "フェリシモ ママ 子育て site:x.com"},
+        {"name": "北欧、暮らしの道具店", "handle": "hokuoh_kurashi", "query": "北欧暮らしの道具店 ライフスタイル site:x.com"},
     ],
 }
 
@@ -159,11 +174,16 @@ def create_research_excel(results: dict, date_str: str) -> Path:
 
     # データ行
     row = 2
-    fill_comp = PatternFill(start_color="DEEAF1", end_color="DEEAF1", fill_type="solid")
-    fill_ref  = PatternFill(start_color="E2EFDA", end_color="E2EFDA", fill_type="solid")
+    fill_map = {
+        "競合":                     PatternFill(start_color="DEEAF1", end_color="DEEAF1", fill_type="solid"),
+        "参考（ベビー）":           PatternFill(start_color="E2EFDA", end_color="E2EFDA", fill_type="solid"),
+        "参考（Kコスメ・韓国ブランド）": PatternFill(start_color="FCE4D6", end_color="FCE4D6", fill_type="solid"),
+        "参考（人気ブランドSNS運用）":  PatternFill(start_color="FFF2CC", end_color="FFF2CC", fill_type="solid"),
+    }
+    fill_default = PatternFill(start_color="F2F2F2", end_color="F2F2F2", fill_type="solid")
 
     for category, brand_results in results.items():
-        fill = fill_comp if category == "競合" else fill_ref
+        fill = fill_map.get(category, fill_default)
         for brand_name, data in brand_results.items():
             urls = data.get("sample_urls", [])
             ws.cell(row=row, column=1, value=category).fill = fill
