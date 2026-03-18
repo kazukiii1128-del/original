@@ -73,6 +73,16 @@ def get_tweet_date(tweet_id: str) -> datetime | None:
     except Exception:
         return None
 
+# Keywords indicating manga/anime/otaku accounts — skip regardless of tweet content
+BLOCKED_KEYWORDS = {
+    # Japanese
+    "漫画", "マンガ", "まんが", "アニメ", "声優", "コスプレ", "オタク", "ヲタク",
+    "推し活", "推し", "二次元", "同人", "コミケ", "萌え", "ガチャ", "聖地巡礼",
+    "キャラ", "フィギュア", "ゲーム実況", "vtuber", "にじさんじ", "ホロライブ",
+    # English (username patterns)
+    "manga", "anime", "otaku", "cosplay", "seiyuu", "vtuber",
+}
+
 # Competitor / brand accounts to skip (lowercase)
 BLOCKED_ACCOUNTS = {
     "pigeon", "pigeon_jp", "combi_jp", "combi", "richell_jp", "richell",
@@ -261,6 +271,17 @@ YESまたはNOだけ答えてください。"""
         return False  # 判定できない場合は送らない
 
 
+def has_blocked_keywords(user_info: dict) -> bool:
+    """ユーザー名・ツイート内容に漫画・アニメ系キーワードが含まれるか確認。"""
+    username = user_info.get("username", "").lower()
+    text = (user_info.get("description", "") + " " + user_info.get("tweet_text", "")).lower()
+
+    for kw in BLOCKED_KEYWORDS:
+        if kw in username or kw in text:
+            return True
+    return False
+
+
 def should_engage(user_info: dict, replied_usernames: set[str]) -> tuple[bool, str]:
     """エンゲージするかどうかを判定する。理由も返す。"""
     username = user_info.get("username", "").lower()
@@ -273,6 +294,10 @@ def should_engage(user_info: dict, replied_usernames: set[str]) -> tuple[bool, s
     # 競合・自社アカウントはスキップ
     if username in BLOCKED_ACCOUNTS:
         return False, "blocked account"
+
+    # 漫画・アニメ系キーワードが含まれる場合はスキップ（Claude判定より前に弾く）
+    if has_blocked_keywords(user_info):
+        return False, "manga/anime keyword detected"
 
     # フォロワー100人未満はスキップ
     if followers < MIN_FOLLOWERS:
