@@ -37,10 +37,11 @@ GITHUB_REPO   = "kazukiii1128-del/Twitter"
 WEBHOOK_URL   = os.getenv("TEAMS_MASTER_WEBHOOK_URL") or os.getenv("TEAMS_WEBHOOK_URL")
 
 WORKFLOW_IDS = {
-    "ツイート":   246628394,
-    "コメンター": 246685095,
-    "監督":       246630423,
-    "調査マン":   246698377,
+    "ツイート":             246628394,
+    "コメンター":           246685095,
+    "監督":                 246630423,
+    "調査マン":             246698377,
+    "ハッシュタグ調査マン": "hashtag.yml",
 }
 
 
@@ -131,7 +132,8 @@ def build_report() -> str:
     date_str = yesterday.strftime("%Y-%m-%d")
     day_names = ["月", "火", "水", "木", "金", "土", "日"]
     day_jp = day_names[yesterday.weekday()]
-    was_chousa_day = yesterday.weekday() in (2, 4)  # 水=2, 金=4
+    was_chousa_day   = yesterday.weekday() in (2, 4)  # 水=2, 金=4
+    was_hashtag_day  = yesterday.weekday() == 4       # 金=4のみ
 
     lines = [f"📊 **総監督 朝報告 — 昨日({date_str}・{day_jp})の実績**\n"]
     lines.append("序列: 総監督 → 監督 → ツイート・コメンター・調査マン\n")
@@ -170,10 +172,19 @@ def build_report() -> str:
         lines.append(f"  {summarize_runs(chousa_runs)}")
         lines.append("")
 
+    # ── ハッシュタグ調査マン（金曜のみ）─────────────
+    if was_hashtag_day:
+        hashtag_runs = get_yesterday_runs(WORKFLOW_IDS["ハッシュタグ調査マン"])
+        lines.append(f"**#️⃣ ハッシュタグ調査マン** (09:00 人気ハッシュタグ調査)")
+        lines.append(f"  {summarize_runs(hashtag_runs)}")
+        lines.append("")
+
     # ── 問題サマリー ──────────────────────────────
     all_runs = tweet_runs + commenter_runs + kantoku_runs
     if was_chousa_day:
         all_runs += get_yesterday_runs(WORKFLOW_IDS["調査マン"])
+    if was_hashtag_day:
+        all_runs += get_yesterday_runs(WORKFLOW_IDS["ハッシュタグ調査マン"])
 
     failures = [r for r in all_runs if r["conclusion"] == "failure"]
     no_runs  = []

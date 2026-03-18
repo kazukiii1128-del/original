@@ -23,6 +23,7 @@
 | **ツイート** | 承認済みツイートを自動投稿 | 毎日 10:00・19:00 JST | `twitter_scheduler.py --slot 10/19` | `tweet.yml` |
 | **コメンター** | 育児ツイートに共感コメントを投稿（1回1人） | 毎日 12:00〜16:00 JST（5回） | `tools/twitter_engage.py --limit 1` | `commenter.yml` |
 | **調査マン** | 競合・参考ブランドのTwitter運用を調査→Teams報告 | 毎週水・金 09:00 JST | `tools/twitter_research.py` | `chousa.yml` |
+| **ハッシュタグ調査マン** | 日本の人気ハッシュタグを全体・育児系に分けて調査→Teams報告 | 毎週金曜 09:00 JST | `tools/twitter_hashtag.py` | `hashtag.yml` |
 
 ---
 
@@ -143,6 +144,7 @@ pigeon, combi, richell, nuk, boon, munchkin, thermos, zojirushi, tiger, skater, 
 | ツイート 19時（tweet.yml） | `0 10 * * *` | 毎日 19:00 |
 | コメンター（commenter.yml） | `0 3-7 * * *` | 毎日 12〜16時 |
 | 調査マン（chousa.yml） | `0 0 * * 3,5` | 水・金 09:00 |
+| ハッシュタグ調査マン（hashtag.yml） | `0 0 * * 5` | 金曜 09:00 |
 
 ---
 
