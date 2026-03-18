@@ -34,7 +34,22 @@ jobs:
           python-version: '3.12'
           cache: 'pip'
       - run: pip install -r requirements.txt
-      - run: python tools/twitter_scheduler.py --slot 10
+      - name: Run scheduler (slot 10)
+        run: |
+          set -o pipefail
+          python tools/twitter_scheduler.py --slot 10 2>&1 | tee /tmp/tweet10.log
+      - name: Teamsにエラーログ送信
+        if: failure()
+        run: |
+          python3 - <<'EOF'
+          import os, requests
+          webhook = os.getenv("TEAMS_WEBHOOK_URL") or os.getenv("TEAMS_MASTER_WEBHOOK_URL")
+          if not webhook:
+              exit(0)
+          with open("/tmp/tweet10.log", errors="replace") as f:
+              log = f.read()[-3000:]
+          requests.post(webhook, json={"text": f"❌ **ツイート10:00 失敗ログ**\n```\n{log}\n```"}, timeout=10)
+          EOF
 
   tweet-19:
     name: ツイート 19:00 JST
@@ -63,4 +78,19 @@ jobs:
           python-version: '3.12'
           cache: 'pip'
       - run: pip install -r requirements.txt
-      - run: python tools/twitter_scheduler.py --slot 19
+      - name: Run scheduler (slot 19)
+        run: |
+          set -o pipefail
+          python tools/twitter_scheduler.py --slot 19 2>&1 | tee /tmp/tweet19.log
+      - name: Teamsにエラーログ送信
+        if: failure()
+        run: |
+          python3 - <<'EOF'
+          import os, requests
+          webhook = os.getenv("TEAMS_WEBHOOK_URL") or os.getenv("TEAMS_MASTER_WEBHOOK_URL")
+          if not webhook:
+              exit(0)
+          with open("/tmp/tweet19.log", errors="replace") as f:
+              log = f.read()[-3000:]
+          requests.post(webhook, json={"text": f"❌ **ツイート19:00 失敗ログ**\n```\n{log}\n```"}, timeout=10)
+          EOF
