@@ -1,5 +1,7 @@
 """
-総監督: 毎日22:00 JSTに今日の全部隊活動をTeamsへ報告。
+総監督: 毎日09:00 JSTに昨日の全部隊活動をTeamsへ報告。
+
+序列: 総監督 → 監督 → ツイート・コメンター・調査マン
 
 担当部隊:
   - ツイート     10:00 / 19:00 投稿（成功/失敗/スキップ）
@@ -42,8 +44,8 @@ WORKFLOW_IDS = {
 }
 
 
-def get_today_runs(wf_id: int) -> list[dict]:
-    """今日(JST)に実行されたrunを返す。"""
+def get_yesterday_runs(wf_id: int) -> list[dict]:
+    """昨日(JST)に実行されたrunを返す。09:00報告なので昨日の実績を確認。"""
     if not GITHUB_TOKEN:
         return []
 
@@ -51,22 +53,21 @@ def get_today_runs(wf_id: int) -> list[dict]:
         "Authorization": f"Bearer {GITHUB_TOKEN}",
         "Accept": "application/vnd.github+json",
     }
-    today_jst = datetime.now(JST).date()
+    yesterday_jst = (datetime.now(JST) - timedelta(days=1)).date()
 
     try:
         resp = requests.get(
             f"https://api.github.com/repos/{GITHUB_REPO}/actions/workflows/{wf_id}/runs",
-            params={"per_page": 10},
+            params={"per_page": 20},
             headers=headers,
             timeout=15,
         )
         resp.raise_for_status()
         runs = []
         for run in resp.json().get("workflow_runs", []):
-            # created_at はUTC → JSTに変換
             created_utc = datetime.fromisoformat(run["created_at"].replace("Z", "+00:00"))
             created_jst = created_utc.astimezone(JST)
-            if created_jst.date() == today_jst:
+            if created_jst.date() == yesterday_jst:
                 runs.append({
                     "name":       run.get("name", ""),
                     "status":     run.get("status", ""),
@@ -93,8 +94,8 @@ def summarize_runs(runs: list[dict]) -> str:
 
 
 def get_tweet_detail() -> str:
-    """ツイート部隊の詳細：今日投稿されたツイートURLをプランJSONから取得。"""
-    date_str = datetime.now(JST).strftime("%Y-%m-%d")
+    """ツイート部隊の詳細：昨日投稿されたツイートをプランJSONから取得。"""
+    date_str = (datetime.now(JST) - timedelta(days=1)).strftime("%Y-%m-%d")
     tmp_dir  = Path(__file__).parent.parent / ".tmp"
     plan_path = tmp_dir / f"daily_tweet_plan_{date_str}.json"
 
@@ -126,16 +127,24 @@ def get_tweet_detail() -> str:
 
 def build_report() -> str:
     today = datetime.now(JST)
-    date_str = today.strftime("%Y-%m-%d")
+    yesterday = today - timedelta(days=1)
+    date_str = yesterday.strftime("%Y-%m-%d")
     day_names = ["月", "火", "水", "木", "金", "土", "日"]
-    day_jp = day_names[today.weekday()]
-    is_chousa_day = today.weekday() in (2, 4)  # 水=2, 金=4
+    day_jp = day_names[yesterday.weekday()]
+    was_chousa_day = yesterday.weekday() in (2, 4)  # 水=2, 金=4
 
-    lines = [f"📊 **総監督レポート — {date_str}（{day_jp}）**\n"]
+    lines = [f"📊 **総監督 朝報告 — 昨日({date_str}・{day_jp})の実績**\n"]
+    lines.append("序列: 総監督 → 監督 → ツイート・コメンター・調査マン\n")
+
+    # ── 監督 ─────────────────────────────────────
+    kantoku_runs = get_yesterday_runs(WORKFLOW_IDS["監督"])
+    lines.append(f"**📋 監督** (09:00 朝の確認)")
+    lines.append(f"  {summarize_runs(kantoku_runs)}")
+    lines.append("")
 
     # ── ツイート ──────────────────────────────────
-    tweet_runs = get_today_runs(WORKFLOW_IDS["ツイート"])
-    lines.append(f"**🐦 ツイート投稿**")
+    tweet_runs = get_yesterday_runs(WORKFLOW_IDS["ツイート"])
+    lines.append(f"**🐦 ツイート投稿** (10:00 / 19:00)")
     lines.append(f"  {summarize_runs(tweet_runs)}")
     tweet_detail = get_tweet_detail()
     if tweet_detail:
@@ -143,7 +152,7 @@ def build_report() -> str:
     lines.append("")
 
     # ── コメンター ────────────────────────────────
-    commenter_runs = get_today_runs(WORKFLOW_IDS["コメンター"])
+    commenter_runs = get_yesterday_runs(WORKFLOW_IDS["コメンター"])
     success_count = sum(1 for r in commenter_runs if r["conclusion"] == "success")
     fail_count    = sum(1 for r in commenter_runs if r["conclusion"] == "failure")
     lines.append(f"**💬 コメンター** (12〜16時 × 5本)")
@@ -154,42 +163,36 @@ def build_report() -> str:
         lines.append("  実行なし")
     lines.append("")
 
-    # ── 監督 ─────────────────────────────────────
-    kantoku_runs = get_today_runs(WORKFLOW_IDS["監督"])
-    lines.append(f"**📋 監督** (09:00 朝の確認)")
-    lines.append(f"  {summarize_runs(kantoku_runs)}")
-    lines.append("")
-
     # ── 調査マン（水・金のみ）─────────────────────
-    if is_chousa_day:
-        chousa_runs = get_today_runs(WORKFLOW_IDS["調査マン"])
+    if was_chousa_day:
+        chousa_runs = get_yesterday_runs(WORKFLOW_IDS["調査マン"])
         lines.append(f"**🔍 調査マン** (09:00 競合Twitter調査)")
         lines.append(f"  {summarize_runs(chousa_runs)}")
         lines.append("")
 
     # ── 問題サマリー ──────────────────────────────
     all_runs = tweet_runs + commenter_runs + kantoku_runs
-    if is_chousa_day:
-        all_runs += get_today_runs(WORKFLOW_IDS["調査マン"])
+    if was_chousa_day:
+        all_runs += get_yesterday_runs(WORKFLOW_IDS["調査マン"])
 
-    failures  = [r for r in all_runs if r["conclusion"] == "failure"]
-    no_runs   = []
+    failures = [r for r in all_runs if r["conclusion"] == "failure"]
+    no_runs  = []
     if not tweet_runs:
-        no_runs.append("ツイート（本日実行なし）")
+        no_runs.append("ツイート（昨日実行なし）")
     if not commenter_runs:
-        no_runs.append("コメンター（本日実行なし）")
+        no_runs.append("コメンター（昨日実行なし）")
 
     if failures or no_runs:
         lines.append("---")
-        lines.append("🚨 **【総監督より】動いてへんやつがおる。すぐ確認して！**\n")
+        lines.append("🚨 **【総監督より】昨日、動いてへんやつがおる。すぐ確認して！**\n")
         for r in failures:
             lines.append(f"❌ **{r['name']}** ({r['created_jst']}) — 失敗してる！GitHub Actionsのログを確認して！")
         for name in no_runs:
-            lines.append(f"⚠️ **{name}** — 今日1回も実行されてへん！スケジュール確認して！")
+            lines.append(f"⚠️ **{name}** — 昨日1回も実行されてへん！スケジュール確認して！")
         lines.append("\n**→ 今すぐ https://github.com/kazukiii1128-del/Twitter/actions を確認してください**")
     else:
         lines.append("---")
-        lines.append("✅ **【総監督より】本日の全部隊、問題なく稼働中。お疲れ様です！**")
+        lines.append("✅ **【総監督より】昨日の全部隊、問題なく稼働。今日もよろしく！**")
 
     return "\n".join(lines)
 
