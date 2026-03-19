@@ -75,12 +75,16 @@ def get_tweet_date(tweet_id: str) -> datetime | None:
 
 # Keywords indicating manga/anime/otaku accounts — skip regardless of tweet content
 BLOCKED_KEYWORDS = {
-    # Japanese
+    # 漫画・アニメ・オタク系
     "漫画", "マンガ", "まんが", "アニメ", "声優", "コスプレ", "オタク", "ヲタク",
     "推し活", "推し", "二次元", "同人", "コミケ", "萌え", "ガチャ", "聖地巡礼",
     "キャラ", "フィギュア", "ゲーム実況", "vtuber", "にじさんじ", "ホロライブ",
-    # English (username patterns)
-    "manga", "anime", "otaku", "cosplay", "seiyuu", "vtuber",
+    # イラストレーター・絵師系
+    "イラスト", "イラストレーター", "絵師", "お絵描き", "絵描き", "創作",
+    "illust", "illustration", "illustrator", "drawing", "artist",
+    # 男性・パパ系
+    "パパ", "ぱぱ", "父", "おとうさん", "お父さん", "夫", "パパ活",
+    "dad", "father", "papa",
 }
 
 # Competitor / brand accounts to skip (lowercase)
@@ -601,6 +605,9 @@ def run_engagement(
                 "reply_id": result.get("reply_id"),
                 "status": result["status"],
             }
+
+            # セッション内でも同じ人に送らないようにリアルタイム更新
+            replied_usernames.add(tweet["username"].lower())
 
             if not dry_run:
                 log = load_engage_log()
