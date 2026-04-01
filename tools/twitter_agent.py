@@ -635,7 +635,7 @@ def execute_post(slot: int, dry_run: bool = False) -> dict:
         client, api_v1 = create_twitter_clients()
         response = client.create_tweet(text=tweet_text)
         tweet_id = response.data["id"]
-        tweet_url = f"https://x.com/grosmimi_japan/status/{tweet_id}"
+        tweet_url = f"https://x.com/grosmimi_jp/status/{tweet_id}"
 
         print(f"  Posted! {tweet_url}")
 

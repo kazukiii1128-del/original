@@ -1,0 +1,3153 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>GROSMIMI 楽天サムネイル案</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700;900&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: #0D0E14;
+    padding: 40px 48px;
+    font-family: 'Noto Sans JP', sans-serif;
+    display: flex;
+    flex-direction: column;
+    gap: 36px;
+    min-height: 100vh;
+    background-image: radial-gradient(ellipse at 20% 0%, rgba(56,189,248,0.07) 0%, transparent 60%),
+                      radial-gradient(ellipse at 80% 100%, rgba(99,102,241,0.06) 0%, transparent 60%);
+  }
+
+  .section-title {
+    font-size: 11px;
+    font-weight: 900;
+    color: rgba(255,255,255,0.35);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    padding-bottom: 10px;
+    border-bottom: 1px solid rgba(255,255,255,0.07);
+    transition: border-color 0.4s;
+  }
+
+  .layout-label {
+    display: inline-block;
+    font-size: 10px;
+    font-weight: 900;
+    color: rgba(255,255,255,0.5);
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    background: rgba(255,255,255,0.07);
+    border: 1px solid rgba(255,255,255,0.1);
+    padding: 4px 14px;
+    border-radius: 50px;
+    margin-bottom: 14px;
+    letter-spacing: 0.5px;
+  }
+
+  .section-note {
+    font-size: 11px;
+    color: rgba(255,255,255,0.3);
+    margin-top: 6px;
+    margin-bottom: 16px;
+  }
+
+  /* ===== THUMBNAILS ===== */
+  .thumb-row {
+    display: flex;
+    gap: 28px;
+    flex-wrap: wrap;
+  }
+
+  .product-section {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .product-label {
+    font-size: 10px;
+    font-weight: 900;
+    color: rgba(255,255,255,0.3);
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+  }
+
+  .thumb {
+    width: 440px;
+    height: 440px;
+    position: relative;
+    overflow: hidden;
+    border-radius: 14px;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.22);
+  }
+
+  .bg-right {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    transition: background 0.4s ease;
+  }
+
+  .bg-anchor {
+    position: absolute;
+    inset: 0;
+    clip-path: polygon(0 0, 42% 0, 30% 100%, 0 100%);
+    z-index: 1;
+    transition: background 0.4s ease, clip-path 0.4s ease;
+  }
+
+  /* ===== レイアウトモード別スタイル ===== */
+
+  /* 全面1色 */
+  body.mode-solid .thumb .bg-anchor {
+    clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%);
+  }
+  body.mode-solid .thumb .bg-right      { display: none; }
+  body.mode-solid .thumb .diagonal-line { display: none; }
+  body.mode-solid .thumb .product-mini  { display: none; }
+  body.mode-solid .thumb .photo-area {
+    right: 14px; left: 14px; width: auto; height: 58%;
+  }
+
+  /* グラデーション */
+  body.mode-gradient .thumb .bg-anchor {
+    clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%);
+  }
+  body.mode-gradient .thumb .bg-right      { display: none; }
+  body.mode-gradient .thumb .diagonal-line { display: none; }
+  body.mode-gradient .thumb .product-mini  { display: none; }
+  body.mode-gradient .thumb .photo-area {
+    right: 14px; left: 14px; width: auto; height: 58%;
+  }
+  body.mode-gradient .thumb .bg-anchor::after {
+    content: '';
+    position: absolute; inset: 0;
+    background: linear-gradient(135deg, rgba(255,255,255,0.42) 0%, rgba(0,0,0,0.14) 100%);
+    pointer-events: none;
+  }
+
+  /* 縦2分割 */
+  body.mode-split .thumb .bg-anchor {
+    clip-path: polygon(0 0, 50% 0, 50% 100%, 0 100%);
+  }
+  body.mode-split .thumb .bg-right      { display: block; }
+  body.mode-split .thumb .diagonal-line {
+    display: block;
+    left: 50%; transform: none; width: 2px; height: 100%;
+  }
+  body.mode-split .thumb .product-mini  { display: none; }
+  body.mode-split .thumb .photo-area {
+    right: 12px; width: 44%; height: 56%;
+  }
+
+  /* コーナーアクセント */
+  body.mode-corner .thumb .bg-anchor {
+    clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%);
+  }
+  body.mode-corner .thumb .bg-right      { display: none; }
+  body.mode-corner .thumb .diagonal-line { display: none; }
+  body.mode-corner .thumb .product-mini  { display: none; }
+  body.mode-corner .thumb .bg-anchor::after {
+    content: '';
+    position: absolute; right: 0; bottom: 0;
+    width: 52%; height: 52%;
+    background: rgba(255,255,255,0.15);
+    clip-path: polygon(100% 0, 100% 100%, 0 100%);
+    pointer-events: none;
+  }
+  body.mode-corner .thumb .photo-area {
+    right: 14px; left: 14px; width: auto; height: 58%;
+  }
+
+  /* 上下2分割 */
+  body.mode-topsplit .thumb .bg-anchor {
+    clip-path: polygon(0 0, 100% 0, 100% 48%, 0 52%);
+  }
+  body.mode-topsplit .thumb .bg-right { display: block; }
+  body.mode-topsplit .thumb .diagonal-line {
+    display: block;
+    left: 0; top: 50%; width: 100%; height: 2px;
+    transform: none; transform-origin: unset;
+  }
+  body.mode-topsplit .thumb .product-mini  { display: none; }
+  body.mode-topsplit .thumb .photo-area {
+    right: 14px; left: 14px; width: auto; top: auto; bottom: 80px; height: 46%;
+  }
+
+  /* 波形 */
+  body.mode-wave .thumb .bg-anchor {
+    clip-path: polygon(0 0, 100% 0, 100% 58%, 88% 50%, 74% 62%, 60% 48%, 46% 60%, 32% 46%, 18% 58%, 0 50%);
+  }
+  body.mode-wave .thumb .bg-right { display: block; }
+  body.mode-wave .thumb .diagonal-line { display: none; }
+  body.mode-wave .thumb .product-mini  { display: none; }
+  body.mode-wave .thumb .photo-area {
+    right: 14px; left: 14px; width: auto; top: 10px; height: 46%;
+  }
+
+  /* 逆斜め（写真が左） */
+  body.mode-diag-r .thumb .bg-anchor {
+    clip-path: polygon(58% 0, 100% 0, 100% 100%, 70% 100%);
+  }
+  body.mode-diag-r .thumb .bg-right { display: block; }
+  body.mode-diag-r .thumb .diagonal-line {
+    display: block;
+    left: auto; right: 37%; transform: rotate(-8deg); transform-origin: top right;
+  }
+  body.mode-diag-r .thumb .product-mini  { display: none; }
+  body.mode-diag-r .thumb .photo-area {
+    left: 12px; right: auto; width: 52%; height: 56%; top: 14px;
+  }
+
+  /* サークル */
+  body.mode-circle .thumb .bg-anchor {
+    clip-path: ellipse(46% 44% at 50% 42%);
+  }
+  body.mode-circle .thumb .bg-right { display: block; }
+  body.mode-circle .thumb .diagonal-line { display: none; }
+  body.mode-circle .thumb .product-mini  { display: none; }
+  body.mode-circle .thumb .photo-area {
+    right: 14px; left: 14px; width: auto; height: 58%;
+  }
+
+  /* 額縁フレーム */
+  body.mode-frame .thumb .bg-anchor {
+    clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%);
+  }
+  body.mode-frame .thumb .bg-right { display: none; }
+  body.mode-frame .thumb .diagonal-line { display: none; }
+  body.mode-frame .thumb .product-mini  { display: none; }
+  body.mode-frame .thumb .bg-anchor::after {
+    content: '';
+    position: absolute; inset: 14px;
+    border: 3px solid rgba(255,255,255,0.55);
+    border-radius: 6px;
+    pointer-events: none;
+  }
+  body.mode-frame .thumb .photo-area {
+    right: 28px; left: 28px; width: auto; height: 54%;
+  }
+
+  .diagonal-line {
+    position: absolute;
+    top: 0; left: 40%;
+    width: 3px; height: 140%;
+    background: rgba(255,255,255,0.45);
+    transform: rotate(8deg);
+    transform-origin: top left;
+    z-index: 2;
+    transition: opacity 0.3s;
+  }
+
+  .logo {
+    position: absolute;
+    top: 14px; left: 12px;
+    z-index: 20;
+    cursor: pointer;
+    user-select: none;
+  }
+  .logo:hover .logo-circle { box-shadow: 0 0 0 2px rgba(255,255,255,0.8), 0 2px 8px rgba(0,0,0,0.2); }
+
+  .logo-circle {
+    width: 56px; height: 56px;
+    border-radius: 50%;
+    background: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    font-weight: 900;
+    font-size: 18px;
+    transition: color 0.4s;
+    overflow: hidden;
+  }
+  .logo-circle img {
+    width: 100%; height: 100%;
+    object-fit: contain;
+    border-radius: 50%;
+  }
+
+  /* ===== 商品名テキスト ===== */
+  .thumb-title {
+    position: absolute;
+    top: 82px; left: 12px;
+    z-index: 25;
+    color: white;
+    font-size: 13px;
+    font-weight: 700;
+    font-family: 'Noto Sans JP', sans-serif;
+    text-shadow: 0 1px 5px rgba(0,0,0,0.5), 0 0 2px rgba(0,0,0,0.3);
+    line-height: 1.5;
+    max-width: 54%;
+    outline: none;
+    cursor: text;
+    min-height: 18px;
+    padding: 2px 5px;
+    border-radius: 4px;
+    word-break: break-all;
+  }
+  .thumb-title:empty::before {
+    content: '商品名を入力';
+    opacity: 0.45;
+    pointer-events: none;
+  }
+  .thumb-title:hover {
+    background: rgba(0,0,0,0.12);
+    outline: 1px dashed rgba(255,255,255,0.6);
+  }
+  .thumb-title:focus {
+    background: rgba(0,0,0,0.18);
+    outline: 1.5px solid rgba(255,255,255,0.85);
+  }
+
+  .photo-area {
+    position: absolute;
+    right: 14px; top: 14px;
+    width: 62%; height: 56%;
+    z-index: 10;
+    border-radius: 12px;
+    background: rgba(255,255,255,0.16);
+    border: 2px dashed rgba(255,255,255,0.5);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: width 0.4s, left 0.4s;
+    cursor: pointer;
+    overflow: visible;
+  }
+  .photo-area:hover { border-color: rgba(255,255,255,0.9); background: rgba(255,255,255,0.22); }
+  .photo-area.drag-over { border-color: #fff; background: rgba(255,255,255,0.35); }
+  .photo-area.has-photo { border: none; background: none; }
+  .photo-area img {
+    position: absolute;
+    object-fit: cover;
+    border-radius: 10px;
+    pointer-events: none;
+  }
+  .photo-area.has-photo .photo-emoji,
+  .photo-area.has-photo .photo-caption { display: none; }
+  .photo-area .photo-remove {
+    display: none;
+    position: absolute; top: 5px; right: 5px;
+    background: rgba(0,0,0,0.5); color: white;
+    border: none; border-radius: 50%;
+    width: 22px; height: 22px; font-size: 13px;
+    cursor: pointer; align-items: center; justify-content: center;
+    z-index: 5;
+  }
+  .photo-area .photo-edit-btn {
+    display: none;
+    position: absolute; top: 5px; left: 5px;
+    background: rgba(0,0,0,0.5); color: white;
+    border: none; border-radius: 50%;
+    width: 22px; height: 22px; font-size: 12px;
+    cursor: pointer; align-items: center; justify-content: center;
+    z-index: 5;
+  }
+  .photo-area.has-photo .photo-remove,
+  .photo-area.has-photo .photo-edit-btn { display: flex; }
+
+  /* ===== サブ写真ストリップ（最大4枚） ===== */
+  .photo-strip {
+    position: absolute;
+    left: 14px; right: 14px;
+    bottom: 82px;
+    height: 22%;
+    display: flex;
+    gap: 4px;
+    z-index: 12;
+  }
+  /* ストリップ上辺のリサイズハンドル */
+  .photo-strip::before {
+    content: '⠿';
+    position: absolute;
+    top: -10px; left: 50%; transform: translateX(-50%);
+    width: 32px; height: 10px;
+    background: rgba(255,255,255,0.35);
+    border-radius: 4px 4px 0 0;
+    cursor: ns-resize;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 9px; color: rgba(255,255,255,0.8);
+    pointer-events: none;
+  }
+  .photo-strip-handle {
+    position: absolute;
+    top: -10px; left: 50%; transform: translateX(-50%);
+    width: 40px; height: 12px;
+    background: rgba(255,255,255,0.35);
+    border-radius: 4px 4px 0 0;
+    cursor: ns-resize;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 8px; color: rgba(255,255,255,0.9);
+    z-index: 13;
+    user-select: none;
+  }
+  .photo-strip-handle:hover { background: rgba(255,255,255,0.55); }
+
+  /* ストリップに写真を追加する＋ボタン */
+  .strip-add-btn {
+    flex-shrink: 0;
+    width: 28px;
+    height: 100%;
+    background: rgba(255,255,255,0.18);
+    border: 2px dashed rgba(255,255,255,0.55);
+    border-radius: 8px;
+    color: rgba(255,255,255,0.85);
+    font-size: 18px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.15s;
+    padding: 0;
+  }
+  .strip-add-btn:hover { background: rgba(255,255,255,0.35); }
+
+  .photo-area-sub {
+    position: relative;
+    flex: 1;
+    height: 100%;
+    border-radius: 8px;
+    background: rgba(255,255,255,0.16);
+    border: 2px dashed rgba(255,255,255,0.5);
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    gap: 3px; cursor: pointer; overflow: visible;
+    transition: border-color 0.2s;
+  }
+  .photo-area-sub:hover { border-color: rgba(255,255,255,0.9); }
+  .photo-area-sub.has-photo { border: none; background: none; }
+  .photo-area-sub .photo-emoji { font-size: 20px; line-height: 1; }
+  .photo-area-sub .photo-caption { font-size: 7.5px; font-weight: 700; color: rgba(255,255,255,0.8); text-align: center; line-height: 1.4; }
+  .photo-area-sub img {
+    position: absolute; pointer-events: none;
+    object-fit: cover; border-radius: 6px;
+  }
+  .photo-area-sub.has-photo .photo-emoji,
+  .photo-area-sub.has-photo .photo-caption { display: none; }
+  .photo-area-sub .photo-remove {
+    display: none; position: absolute; top: 3px; right: 3px;
+    background: rgba(0,0,0,0.55); color: white;
+    border: none; border-radius: 50%;
+    width: 16px; height: 16px; font-size: 10px;
+    cursor: pointer; align-items: center; justify-content: center; z-index: 5;
+  }
+  .photo-area-sub .photo-edit-btn {
+    display: none; position: absolute; top: 3px; left: 3px;
+    background: rgba(0,0,0,0.55); color: white;
+    border: none; border-radius: 50%;
+    width: 16px; height: 16px; font-size: 9px;
+    cursor: pointer; align-items: center; justify-content: center; z-index: 5;
+  }
+  .photo-area-sub.has-photo .photo-remove,
+  .photo-area-sub.has-photo .photo-edit-btn { display: flex; }
+
+  .pep-fit {
+    font-size: 11px; padding: 3px 9px;
+    border-radius: 20px; border: 1px solid rgba(255,255,255,0.1);
+    background: rgba(255,255,255,0.06); color: rgba(255,255,255,0.5);
+    font-family: 'Noto Sans JP', sans-serif; cursor: pointer;
+    transition: all 0.15s;
+  }
+  .pep-fit:hover { background: rgba(255,255,255,0.12); color: rgba(255,255,255,0.8); }
+  .pep-fit.active { background: rgba(167,139,250,0.25); color: #C4B5FD; border-color: rgba(167,139,250,0.4); }
+
+  /* Photo edit popup */
+  #photo-edit-popup {
+    display: none; position: fixed; z-index: 9999;
+    background: rgba(18,20,30,0.96);
+    backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 14px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.07);
+    padding: 12px 14px; flex-direction: column; gap: 8px; min-width: 280px;
+    color: white;
+  }
+  #photo-edit-popup.visible { display: flex; }
+
+  .photo-emoji { font-size: 44px; line-height: 1; }
+
+  .photo-caption {
+    font-size: 10px;
+    font-weight: 700;
+    color: rgba(255,255,255,0.8);
+    text-align: center;
+    line-height: 1.6;
+    text-shadow: 0 1px 3px rgba(0,0,0,0.2);
+  }
+
+  .product-mini {
+    position: absolute;
+    left: 14px; top: 52%;
+    width: 28%; height: 28%;
+    z-index: 15;
+    border-radius: 10px;
+    background: rgba(255,255,255,0.2);
+    border: 1.5px solid rgba(255,255,255,0.4);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .product-mini-text {
+    font-size: 9px;
+    font-weight: 700;
+    color: rgba(255,255,255,0.75);
+    text-align: center;
+    line-height: 1.5;
+  }
+
+  .badges {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    right: 12px;
+    left: auto;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 7px;
+    z-index: 20;
+    flex-wrap: nowrap;
+  }
+  /* add-badge-btn は並び配列から除外 */
+  .badges .add-badge-btn {
+    align-self: center;
+    flex-shrink: 0;
+    order: 999;
+  }
+  .badges.dir-row {
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  /* 2×2グリッド：バッジをwrapしてwidth制限 */
+  .badges.dir-grid {
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: center;
+    width: fit-content;
+    max-width: 55%;
+    right: 12px;
+    left: auto;
+    transform: translateY(-50%);
+    padding: 0;
+  }
+  .badges.dir-grid .badge {
+    flex: 1 1 44%;
+    text-align: center;
+  }
+
+  .badge {
+    width: 68px; height: 68px; min-width: 68px;
+    padding: 0;
+    border-radius: 50%;
+    font-size: 14px;
+    font-weight: 900;
+    color: white;
+    white-space: normal;
+    line-height: 1.3;
+    text-align: center;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 3px 12px rgba(0,0,0,0.2);
+    transition: background 0.4s ease;
+  }
+
+  .spec {
+    position: absolute;
+    bottom: 82px; left: 14px;
+    font-size: 10px;
+    color: rgba(60,60,60,0.6);
+    z-index: 20;
+    font-weight: 700;
+    line-height: 1.7;
+  }
+
+  .lineup {
+    position: absolute;
+    bottom: 20px;
+    left: 0; right: 0;
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+    z-index: 20;
+    align-items: center;
+  }
+
+  .color-chip {
+    width: 40px; height: 40px;
+    border-radius: 50%;
+    border: 2.5px solid white;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.18);
+  }
+
+  /* ===== COLOR GRID ===== */
+  .color-grid {
+    display: grid;
+    grid-template-columns: repeat(10, 1fr);
+    gap: 14px;
+    max-width: 1800px;
+  }
+
+  .color-card {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.07);
+    border-radius: 10px;
+    overflow: hidden;
+    cursor: pointer;
+    transition: transform 0.18s, box-shadow 0.18s, border-color 0.18s;
+  }
+
+  .color-card:hover {
+    transform: translateY(-3px);
+    border-color: rgba(255,255,255,0.18);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+  }
+
+  .color-card.selected {
+    border-color: rgba(96,165,250,0.6);
+    transform: translateY(-3px);
+    box-shadow: 0 0 0 1px rgba(96,165,250,0.3), 0 8px 24px rgba(0,0,0,0.4);
+  }
+
+  .mini-thumb {
+    width: 100%;
+    height: 140px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .mini-bg-right {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+  }
+
+  .mini-bg-anchor {
+    position: absolute;
+    inset: 0;
+    clip-path: polygon(0 0, 42% 0, 30% 100%, 0 100%);
+    z-index: 1;
+    transition: clip-path 0.4s;
+  }
+
+  body.mode-solid .mini-bg-right,
+  body.mode-gradient .mini-bg-right,
+  body.mode-corner .mini-bg-right,
+  body.mode-circle .mini-bg-right,
+  body.mode-frame .mini-bg-right { display: none; }
+  body.mode-solid .mini-bg-anchor,
+  body.mode-gradient .mini-bg-anchor,
+  body.mode-corner .mini-bg-anchor,
+  body.mode-circle .mini-bg-anchor,
+  body.mode-frame .mini-bg-anchor { clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%); }
+  body.mode-split .mini-bg-anchor   { clip-path: polygon(0 0, 50% 0, 50% 100%, 0 100%); }
+  body.mode-topsplit .mini-bg-anchor { clip-path: polygon(0 0, 100% 0, 100% 50%, 0 50%); }
+  body.mode-wave .mini-bg-anchor {
+    clip-path: polygon(0 0, 100% 0, 100% 58%, 88% 50%, 74% 62%, 60% 48%, 46% 60%, 32% 46%, 18% 58%, 0 50%);
+  }
+  body.mode-diag-r .mini-bg-anchor { clip-path: polygon(58% 0, 100% 0, 100% 100%, 70% 100%); }
+  body.mode-solid .mini-diag,
+  body.mode-gradient .mini-diag,
+  body.mode-split .mini-diag,
+  body.mode-topsplit .mini-diag,
+  body.mode-wave .mini-diag,
+  body.mode-circle .mini-diag,
+  body.mode-frame .mini-diag,
+  body.mode-corner .mini-diag { display: none; }
+
+  .mini-diag {
+    position: absolute;
+    top: 0; left: 40%;
+    width: 2px; height: 140%;
+    background: rgba(255,255,255,0.4);
+    transform: rotate(8deg);
+    transform-origin: top left;
+    z-index: 2;
+  }
+
+  .mini-logo-el {
+    position: absolute;
+    top: 8px; left: 8px;
+    z-index: 10;
+    width: 24px; height: 24px;
+    border-radius: 50%;
+    background: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 900;
+    font-size: 10px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.15);
+  }
+
+  .mini-photo-el {
+    position: absolute;
+    right: 8px; top: 8px;
+    width: 56%; height: 55%;
+    border-radius: 6px;
+    background: rgba(255,255,255,0.18);
+    border: 1.5px dashed rgba(255,255,255,0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+    z-index: 10;
+  }
+
+  body.mode-solid .mini-photo-el,
+  body.mode-gradient .mini-photo-el,
+  body.mode-split .mini-photo-el,
+  body.mode-topsplit .mini-photo-el,
+  body.mode-wave .mini-photo-el,
+  body.mode-circle .mini-photo-el,
+  body.mode-frame .mini-photo-el,
+  body.mode-corner .mini-photo-el { width: 62%; }
+
+  .mini-badges-el {
+    position: absolute;
+    bottom: 6px;
+    left: 0; right: 0;
+    display: flex;
+    justify-content: center;
+    gap: 3px;
+    z-index: 10;
+    flex-wrap: wrap;
+    padding: 0 4px;
+  }
+
+  .mini-badge-el {
+    padding: 2px 7px;
+    border-radius: 50px;
+    font-size: 7.5px;
+    font-weight: 900;
+    color: white;
+    white-space: nowrap;
+  }
+
+  .color-info {
+    padding: 10px 13px 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .color-name-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+
+  .color-name-el {
+    font-size: 10px;
+    font-weight: 900;
+    color: rgba(255,255,255,0.7);
+  }
+
+  .color-desc-el {
+    font-size: 9px;
+    color: rgba(255,255,255,0.3);
+    line-height: 1.5;
+  }
+
+  .color-chips-row {
+    display: flex;
+    gap: 5px;
+    margin-top: 3px;
+  }
+
+  .mini-swatch-el {
+    width: 18px; height: 18px;
+    border-radius: 50%;
+    border: 1.5px solid rgba(255,255,255,0.2);
+  }
+
+  .selected-tag {
+    display: none;
+    font-size: 8px;
+    background: rgba(96,165,250,0.3);
+    color: #93C5FD;
+    border: 1px solid rgba(96,165,250,0.4);
+    padding: 2px 7px;
+    border-radius: 4px;
+    font-weight: 900;
+  }
+
+  .color-card.selected .selected-tag { display: inline-block; }
+
+  /* ===== 保存セクション ===== */
+  .save-section {
+    padding: 20px 24px;
+    background: rgba(255,255,255,0.04);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 16px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .save-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  .save-label {
+    font-size: 10px;
+    color: rgba(255,255,255,0.3);
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    min-width: 72px;
+  }
+  .save-png-btn {
+    padding: 7px 16px;
+    background: rgba(96,165,250,0.15);
+    color: #93C5FD;
+    border: 1px solid rgba(96,165,250,0.25);
+    border-radius: 8px;
+    font-size: 12px;
+    font-family: 'Noto Sans JP', sans-serif;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .save-png-btn:hover { background: rgba(96,165,250,0.25); border-color: rgba(96,165,250,0.45); color: #BFDBFE; }
+  .save-all-btn { background: rgba(74,222,128,0.12); color: #86EFAC; border-color: rgba(74,222,128,0.22); }
+  .save-all-btn:hover { background: rgba(74,222,128,0.22); color: #BBF7D0; }
+  #state-save-btn, #state-load-btn {
+    padding: 7px 16px;
+    border-radius: 8px;
+    font-size: 12px;
+    font-family: 'Noto Sans JP', sans-serif;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  #state-save-btn {
+    background: rgba(255,255,255,0.1); color: white;
+    border: 1px solid rgba(255,255,255,0.15);
+  }
+  #state-save-btn:hover { background: rgba(255,255,255,0.18); }
+  #state-load-btn {
+    background: transparent; color: rgba(255,255,255,0.45);
+    border: 1px solid rgba(255,255,255,0.1);
+  }
+  #state-load-btn:hover { border-color: rgba(255,255,255,0.25); color: rgba(255,255,255,0.7); }
+  #state-status {
+    font-size: 11px; color: #86EFAC;
+    font-weight: 700;
+  }
+
+  /* ===== カラーターゲット切替 ===== */
+  .color-target-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 10px;
+    flex-wrap: wrap;
+  }
+  .color-target-label {
+    font-size: 10px;
+    color: rgba(255,255,255,0.3);
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+  .color-target-btn {
+    padding: 5px 13px;
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 8px;
+    background: rgba(255,255,255,0.05);
+    font-size: 12px;
+    font-family: 'Noto Sans JP', sans-serif;
+    font-weight: 700;
+    color: rgba(255,255,255,0.35);
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .color-target-btn:hover { border-color: rgba(255,255,255,0.2); color: rgba(255,255,255,0.7); background: rgba(255,255,255,0.09); }
+  .color-target-btn.active {
+    background: rgba(96,165,250,0.2);
+    border-color: rgba(96,165,250,0.4);
+    color: #93C5FD;
+  }
+
+  /* ===== BADGE CONTROLS ===== */
+  .control-panel {
+    background: rgba(255,255,255,0.04);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 16px;
+    padding: 24px 28px;
+    max-width: 700px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+  }
+  .control-row {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 16px;
+  }
+  .control-row:last-child { margin-bottom: 0; }
+  .control-label {
+    font-size: 11px;
+    font-weight: 700;
+    color: rgba(255,255,255,0.45);
+    letter-spacing: 0.5px;
+    width: 100px;
+    flex-shrink: 0;
+  }
+  .control-value {
+    font-size: 11px;
+    color: rgba(255,255,255,0.35);
+    width: 40px;
+    text-align: right;
+    flex-shrink: 0;
+  }
+  input[type=range] {
+    flex: 1;
+    accent-color: #6FA87A;
+    cursor: pointer;
+  }
+  .align-btns {
+    display: flex;
+    gap: 8px;
+  }
+  .align-btn {
+    padding: 5px 15px;
+    border-radius: 8px;
+    border: 1px solid rgba(255,255,255,0.1);
+    background: rgba(255,255,255,0.05);
+    font-size: 12px;
+    font-weight: 700;
+    font-family: 'Noto Sans JP', sans-serif;
+    cursor: pointer;
+    color: rgba(255,255,255,0.35);
+    transition: all 0.18s;
+  }
+  .align-btn:hover { background: rgba(255,255,255,0.1); color: rgba(255,255,255,0.7); }
+  .align-btn.active {
+    background: rgba(255,255,255,0.14);
+    color: white;
+    border-color: rgba(255,255,255,0.2);
+  }
+  .align-btn:hover:not(.active) {
+    border-color: rgba(255,255,255,0.18);
+    color: rgba(255,255,255,0.7);
+  }
+  .cp-section-label {
+    font-size: 11px;
+    font-weight: 900;
+    color: rgba(255,255,255,0.35);
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+    padding-bottom: 6px;
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+  }
+  .mini-label {
+    font-size: 11px;
+    font-weight: 700;
+    color: rgba(255,255,255,0.4);
+    white-space: nowrap;
+  }
+
+  /* ===== LAYOUT SWITCHER ===== */
+  .layout-switcher {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+    background: rgba(255,255,255,0.04);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    padding: 10px 14px;
+    border-radius: 16px;
+    border: 1px solid rgba(255,255,255,0.09);
+    box-shadow: 0 8px 32px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.06);
+    position: sticky;
+    top: 16px;
+    z-index: 100;
+    max-width: 980px;
+    flex-wrap: wrap;
+  }
+  .layout-switcher-label {
+    font-size: 10px;
+    font-weight: 900;
+    color: rgba(255,255,255,0.25);
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    margin-right: 6px;
+    white-space: nowrap;
+  }
+  .layout-tab {
+    padding: 7px 15px;
+    border-radius: 10px;
+    border: 1px solid transparent;
+    background: transparent;
+    font-size: 12px;
+    font-weight: 700;
+    font-family: 'Noto Sans JP', sans-serif;
+    cursor: pointer;
+    color: rgba(255,255,255,0.4);
+    transition: all 0.18s;
+    white-space: nowrap;
+  }
+  .layout-tab:hover {
+    background: rgba(255,255,255,0.07);
+    color: rgba(255,255,255,0.8);
+  }
+  .layout-tab.active {
+    background: rgba(255,255,255,0.12);
+    color: #fff;
+    border-color: rgba(255,255,255,0.15);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+  }
+  .current-color-badge {
+    margin-left: auto;
+    font-size: 11px;
+    font-weight: 700;
+    color: rgba(255,255,255,0.5);
+    background: rgba(255,255,255,0.07);
+    border: 1px solid rgba(255,255,255,0.1);
+    padding: 5px 12px;
+    border-radius: 8px;
+    white-space: nowrap;
+  }
+
+  /* ===== BADGE COUNT ===== */
+  .count-btn {
+    width: 32px; height: 32px;
+    border-radius: 8px;
+    border: 1px solid rgba(255,255,255,0.1);
+    background: rgba(255,255,255,0.06);
+    font-size: 20px;
+    font-weight: 700;
+    cursor: pointer;
+    color: rgba(255,255,255,0.55);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+    line-height: 1;
+    padding: 0;
+  }
+  .count-btn:hover { background: rgba(255,255,255,0.14); color: white; border-color: rgba(255,255,255,0.2); }
+  .count-btn:disabled { opacity: 0.25; cursor: not-allowed; }
+  .count-display {
+    font-size: 20px;
+    font-weight: 900;
+    color: rgba(255,255,255,0.7);
+    width: 28px;
+    text-align: center;
+  }
+  .badge { cursor: pointer; }
+  .badge:hover { opacity: 0.85; }
+
+  #badge-edit-popup {
+    display: none;
+    position: fixed;
+    z-index: 9999;
+    background: rgba(18,20,30,0.96);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 14px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.07);
+    padding: 14px 16px;
+    flex-direction: column;
+    gap: 10px;
+    min-width: 320px;
+  }
+  #badge-edit-popup.visible { display: flex; }
+  .pe-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+  .pe-lbl { font-size: 10px; color: rgba(255,255,255,0.35); white-space: nowrap; letter-spacing: 0.5px; text-transform: uppercase; }
+  .pe-row input[type="range"] { width: 80px; accent-color: #60A5FA; }
+  .pe-row input[type="color"] {
+    width: 28px; height: 28px;
+    border: 1px solid rgba(255,255,255,0.15); border-radius: 6px;
+    cursor: pointer; padding: 2px; background: none;
+  }
+  .pe-shape {
+    font-size: 11px; padding: 4px 10px;
+    border-radius: 8px; border: 1px solid rgba(255,255,255,0.1);
+    background: rgba(255,255,255,0.06); cursor: pointer;
+    color: rgba(255,255,255,0.5); font-family: 'Noto Sans JP', sans-serif;
+  }
+  .pe-shape:hover { background: rgba(255,255,255,0.1); color: white; }
+  .pe-shape.active { background: rgba(96,165,250,0.25); color: #93C5FD; border-color: rgba(96,165,250,0.4); }
+  #badge-edit-input {
+    flex: 1; min-width: 100px;
+    background: rgba(255,255,255,0.07);
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 8px;
+    padding: 6px 10px;
+    font-size: 13px;
+    font-family: 'Noto Sans JP', sans-serif;
+    outline: none;
+    color: white;
+  }
+  #badge-edit-input::placeholder { color: rgba(255,255,255,0.25); }
+  #badge-edit-input:focus { border-color: rgba(96,165,250,0.5); background: rgba(255,255,255,0.1); }
+  #badge-edit-ok {
+    padding: 6px 14px;
+    background: rgba(255,255,255,0.12); color: white;
+    border: 1px solid rgba(255,255,255,0.18); border-radius: 8px;
+    font-size: 12px; font-weight: 700;
+    font-family: 'Noto Sans JP', sans-serif;
+    cursor: pointer; white-space: nowrap;
+    transition: background 0.15s;
+  }
+  #badge-edit-ok:hover { background: rgba(255,255,255,0.2); }
+  #badge-edit-delete {
+    padding: 6px 10px;
+    background: rgba(220,38,38,0.15); color: #FCA5A5;
+    border: 1px solid rgba(220,38,38,0.25); border-radius: 8px;
+    font-size: 12px; cursor: pointer;
+    font-family: 'Noto Sans JP', sans-serif;
+    transition: background 0.15s;
+  }
+  #badge-edit-delete:hover { background: rgba(220,38,38,0.25); }
+  .pe-dir {
+    font-size: 11px; padding: 4px 10px;
+    border-radius: 8px; border: 1px solid rgba(255,255,255,0.1);
+    background: rgba(255,255,255,0.06); cursor: pointer;
+    color: rgba(255,255,255,0.45); font-family: 'Noto Sans JP', sans-serif;
+  }
+  .pe-dir:hover { background: rgba(255,255,255,0.1); color: white; }
+  .pe-dir.active { background: rgba(96,165,250,0.25); color: #93C5FD; border-color: rgba(96,165,250,0.4); }
+
+  /* Chip edit popup */
+  #chip-edit-popup {
+    display: none; position: fixed; z-index: 9999;
+    background: rgba(18,20,30,0.96);
+    backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 14px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.07);
+    padding: 12px 14px; flex-direction: column; gap: 8px; min-width: 210px;
+    color: white;
+  }
+  #chip-edit-popup.visible { display: flex; }
+
+  /* Add "+" overlay buttons inside preview */
+  .add-badge-btn {
+    background: rgba(255,255,255,0.25);
+    border: 1.5px dashed rgba(255,255,255,0.7);
+    color: rgba(255,255,255,0.9);
+    border-radius: 50%; width: 22px; height: 22px;
+    font-size: 15px; cursor: pointer;
+    display: inline-flex; align-items: center; justify-content: center;
+    flex-shrink: 0; padding: 0; line-height: 1;
+  }
+  .add-badge-btn:hover { background: rgba(255,255,255,0.45); }
+  .add-chip-btn {
+    width: 22px; height: 22px;
+    background: rgba(255,255,255,0.1);
+    border: 1.5px dashed rgba(255,255,255,0.35);
+    border-radius: 50%;
+    display: inline-flex; align-items: center; justify-content: center;
+    font-size: 15px; cursor: pointer; flex-shrink: 0;
+    color: rgba(255,255,255,0.55); padding: 0; line-height: 1;
+    transition: background 0.15s;
+  }
+  .add-chip-btn:hover { background: rgba(255,255,255,0.2); color: white; }
+
+  /* ===== DRAGGABLE BADGES ===== */
+  .badges {
+    cursor: grab;
+  }
+  .badges:hover {
+    outline: 1.5px dashed rgba(255,255,255,0.7);
+    outline-offset: 4px;
+  }
+  .badges.dragging {
+    cursor: grabbing;
+    outline: 2px solid rgba(255,255,255,0.9);
+    outline-offset: 4px;
+  }
+
+  /* ===== 商品名サイズツールバー ===== */
+  #title-size-bar {
+    display: none;
+    position: fixed;
+    z-index: 99999;
+    background: #2a2a2a;
+    border-radius: 8px;
+    padding: 4px 8px;
+    gap: 6px;
+    align-items: center;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.35);
+    font-family: 'Noto Sans JP', sans-serif;
+    font-size: 12px;
+    color: white;
+    pointer-events: auto;
+  }
+  #title-size-bar.visible { display: flex; }
+  #title-size-bar button {
+    width: 24px; height: 24px;
+    background: rgba(255,255,255,0.12);
+    border: none; border-radius: 5px;
+    color: white; font-size: 15px;
+    cursor: pointer; line-height: 1;
+    display: flex; align-items: center; justify-content: center;
+  }
+  #title-size-bar button:hover { background: rgba(255,255,255,0.28); }
+  #title-size-val {
+    min-width: 32px; text-align: center;
+    font-weight: 700; font-size: 12px;
+  }
+  #title-color-wrap {
+    width: 24px; height: 24px;
+    border-radius: 5px;
+    overflow: hidden;
+    border: 2px solid rgba(255,255,255,0.3);
+    cursor: pointer;
+    flex-shrink: 0;
+  }
+  #title-color-pick {
+    width: 36px; height: 36px;
+    border: none; padding: 0; margin: -6px;
+    cursor: pointer;
+    background: none;
+  }
+</style>
+</head>
+<body>
+
+<!-- 商品名サイズツールバー -->
+<div id="title-size-bar">
+  <button id="title-sz-down">−</button>
+  <span id="title-size-val">13px</span>
+  <button id="title-sz-up">＋</button>
+  <div id="title-color-wrap" title="文字色">
+    <input type="color" id="title-color-pick" value="#ffffff">
+  </div>
+</div>
+
+<!-- Badge edit popup -->
+<div id="badge-edit-popup">
+  <!-- Row 1: text -->
+  <div class="pe-row">
+    <input id="badge-edit-input" type="text" placeholder="バッジテキスト">
+    <button id="badge-edit-ok">確定</button>
+    <button id="badge-edit-delete">削除</button>
+  </div>
+  <!-- Row 2: font + padding (non-circle only) -->
+  <div class="pe-row" id="pe-style-row" style="display:none">
+    <span class="pe-lbl">文字</span>
+    <input type="range" id="pe-font-rect" min="8" max="22" value="14">
+    <span id="pe-font-rect-val" class="pe-lbl">14px</span>
+    <span class="pe-lbl" style="margin-left:6px">余白</span>
+    <input type="range" id="pe-pad" min="4" max="20" value="10">
+    <span id="pe-pad-val" class="pe-lbl">10px</span>
+  </div>
+  <!-- Row 3: font + circle size -->
+  <div class="pe-row" id="pe-circle-row">
+    <span class="pe-lbl">文字</span>
+    <input type="range" id="pe-font" min="8" max="22" value="14">
+    <span id="pe-font-val" class="pe-lbl">14px</span>
+    <span class="pe-lbl" style="margin-left:6px">円サイズ</span>
+    <input type="range" id="pe-circle" min="44" max="110" value="68">
+    <span id="pe-circle-val" class="pe-lbl">68px</span>
+  </div>
+  <!-- Row 4: shape + color -->
+  <div class="pe-row">
+    <button class="pe-shape" data-r="50">カプセル</button>
+    <button class="pe-shape" data-r="10">角丸</button>
+    <button class="pe-shape" data-r="0">四角</button>
+    <button class="pe-shape active" data-r="circle">円形</button>
+    <span class="pe-lbl" style="margin-left:auto">色</span>
+    <input type="color" id="pe-color" value="#6FA87A">
+  </div>
+  <!-- Row 5: direction -->
+  <div class="pe-row">
+    <span class="pe-lbl">並び</span>
+    <button class="pe-dir" data-dir="row">横</button>
+    <button class="pe-dir active" data-dir="column">縦</button>
+    <button class="pe-dir" data-dir="grid">2×2</button>
+  </div>
+</div>
+
+<!-- Chip edit popup -->
+<div id="chip-edit-popup">
+  <div class="pe-row">
+    <span class="pe-lbl">色</span>
+    <input type="color" id="cpe-color" value="#cccccc">
+    <button id="chip-edit-delete" style="margin-left:auto;padding:5px 8px;background:rgba(220,38,38,0.15);color:#FCA5A5;border:1px solid rgba(220,38,38,0.25);border-radius:6px;font-size:12px;cursor:pointer;font-family:'Noto Sans JP',sans-serif">削除</button>
+    <button id="chip-edit-delete-all" style="padding:5px 8px;background:rgba(220,38,38,0.1);color:#FCA5A5;border:1px solid rgba(220,38,38,0.2);border-radius:6px;font-size:12px;cursor:pointer;font-family:'Noto Sans JP',sans-serif">全削除</button>
+  </div>
+  <div class="pe-row">
+    <span class="pe-lbl">サイズ</span>
+    <input type="range" id="cpe-size" min="16" max="64" value="40">
+    <span id="cpe-size-val" class="pe-lbl">40px</span>
+  </div>
+</div>
+
+<!-- Photo edit popup -->
+<div id="photo-edit-popup">
+  <div class="pe-row">
+    <span class="pe-lbl">表示</span>
+    <button class="pep-fit" data-fit="cover">カバー</button>
+    <button class="pep-fit active" data-fit="contain">フィット</button>
+    <button class="pep-fit" data-fit="fill">引き伸ばし</button>
+  </div>
+  <div class="pe-row">
+    <span class="pe-lbl">横位置</span>
+    <input type="range" id="pep-x" min="-400" max="400" value="0">
+    <span id="pep-x-val" class="pe-lbl">0px</span>
+  </div>
+  <div class="pe-row">
+    <span class="pe-lbl">縦位置</span>
+    <input type="range" id="pep-y" min="-400" max="400" value="0">
+    <span id="pep-y-val" class="pe-lbl">0px</span>
+  </div>
+  <div class="pe-row">
+    <span class="pe-lbl">ズーム</span>
+    <input type="range" id="pep-zoom" min="50" max="300" value="100">
+    <span id="pep-zoom-val" class="pe-lbl">100%</span>
+  </div>
+  <div class="pe-row" style="justify-content:flex-end">
+    <button id="pep-change" style="padding:5px 12px;background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.15);border-radius:6px;font-size:12px;cursor:pointer;color:rgba(255,255,255,0.8);font-family:'Noto Sans JP',sans-serif">📁 写真を変更</button>
+    <button id="pep-close" style="padding:5px 12px;background:rgba(255,255,255,0.06);color:rgba(255,255,255,0.55);border:1px solid rgba(255,255,255,0.1);border-radius:6px;font-size:12px;cursor:pointer;font-family:'Noto Sans JP',sans-serif">閉じる</button>
+  </div>
+</div>
+
+<!-- ===== LAYOUT SWITCHER ===== -->
+<div class="layout-switcher">
+  <span class="layout-switcher-label">レイアウト</span>
+  <button class="layout-tab" id="tab-solid" onclick="switchLayout('solid')">■ 全面1色</button>
+  <button class="layout-tab" id="tab-gradient" onclick="switchLayout('gradient')">◈ グラデ</button>
+  <button class="layout-tab" id="tab-frame" onclick="switchLayout('frame')">▣ 額縁</button>
+  <button class="layout-tab" id="tab-corner" onclick="switchLayout('corner')">⬟ コーナー</button>
+  <button class="layout-tab" id="tab-split" onclick="switchLayout('split')">◧ 縦2分割</button>
+  <button class="layout-tab" id="tab-topsplit" onclick="switchLayout('topsplit')">⬓ 上下分割</button>
+  <button class="layout-tab" id="tab-wave" onclick="switchLayout('wave')">〜 波形</button>
+  <button class="layout-tab" id="tab-diagonal" onclick="switchLayout('diagonal')">↗ 斜め分割</button>
+  <button class="layout-tab" id="tab-diag-r" onclick="switchLayout('diag-r')">↖ 逆斜め</button>
+  <button class="layout-tab" id="tab-circle" onclick="switchLayout('circle')">◉ サークル</button>
+  <span class="current-color-badge" id="current-label">1：くすみミント</span>
+</div>
+
+<!-- ===== MAIN THUMBNAIL SECTION ===== -->
+<div id="section-diagonal">
+  <div class="layout-label" id="layout-label-text">■ 全面1色</div>
+  <div class="thumb-row">
+
+    <!-- PPSU -->
+    <div class="product-section">
+      <div class="product-label">① PPSU</div>
+      <div class="thumb">
+        <div class="bg-right" id="ppsu-bg-right" style="background:#F5EAD8;"></div>
+        <div class="bg-anchor" id="ppsu-bg-anchor" style="background:#B8D8C8;"></div>
+        <div class="diagonal-line"></div>
+        <div class="logo">
+          <div class="logo-circle" id="ppsu-logo" style="color:#3D6B52;">G</div>
+        </div>
+        <div class="thumb-title" contenteditable="true" data-product="ppsu">PPSUストローマグ</div>
+        <div class="photo-area" data-product="ppsu" data-slot="1">
+          <div class="photo-emoji">👶</div>
+          <div class="photo-caption">赤ちゃん写真<br>マグを飲んでいる</div>
+          <button class="photo-remove">×</button>
+        </div>
+        <div class="photo-strip">
+          <div class="photo-area-sub" data-product="ppsu" data-slot="2"><div class="photo-emoji">📦</div><div class="photo-caption">2</div><button class="photo-remove">×</button></div>
+          <div class="photo-area-sub" data-product="ppsu" data-slot="3"><div class="photo-emoji">📦</div><div class="photo-caption">3</div><button class="photo-remove">×</button></div>
+          <div class="photo-area-sub" data-product="ppsu" data-slot="4"><div class="photo-emoji">📦</div><div class="photo-caption">4</div><button class="photo-remove">×</button></div>
+          <div class="photo-area-sub" data-product="ppsu" data-slot="5"><div class="photo-emoji">📦</div><div class="photo-caption">5</div><button class="photo-remove">×</button></div>
+        </div>
+        <div class="product-mini"><div class="product-mini-text">商品写真</div></div>
+
+        <div class="badges" data-product="ppsu">
+          <span class="badge all-badge" style="background:#6FA87A;">PPSU素材</span>
+          <span class="badge all-badge" style="background:#6FA87A;">BPAフリー</span>
+          <span class="badge all-badge" style="background:#6FA87A;">6ヶ月〜</span>
+        </div>
+        <div class="lineup" data-product="ppsu">
+          <div class="color-chip" style="background:#7CB8CC;"></div>
+          <div class="color-chip" style="background:#E8A8A8;"></div>
+          <div class="color-chip" style="background:#F0EAE0;"></div>
+          <div class="color-chip" style="background:#2A2A2A;"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Stainless -->
+    <div class="product-section">
+      <div class="product-label">② Stainless</div>
+      <div class="thumb">
+        <div class="bg-right" id="sl-bg-right" style="background:#EED8D8;"></div>
+        <div class="bg-anchor" id="sl-bg-anchor" style="background:#B8D8C8;"></div>
+        <div class="diagonal-line"></div>
+        <div class="logo">
+          <div class="logo-circle" id="sl-logo" style="color:#3D6B52;">G</div>
+        </div>
+        <div class="thumb-title" contenteditable="true" data-product="stainless">ステンレスストローマグ</div>
+        <div class="photo-area" data-product="stainless" data-slot="1">
+          <div class="photo-emoji">👶</div>
+          <div class="photo-caption">赤ちゃん写真<br>外出シーン</div>
+          <button class="photo-remove">×</button>
+        </div>
+        <div class="photo-strip">
+          <div class="photo-area-sub" data-product="stainless" data-slot="2"><div class="photo-emoji">📦</div><div class="photo-caption">2</div><button class="photo-remove">×</button></div>
+          <div class="photo-area-sub" data-product="stainless" data-slot="3"><div class="photo-emoji">📦</div><div class="photo-caption">3</div><button class="photo-remove">×</button></div>
+          <div class="photo-area-sub" data-product="stainless" data-slot="4"><div class="photo-emoji">📦</div><div class="photo-caption">4</div><button class="photo-remove">×</button></div>
+          <div class="photo-area-sub" data-product="stainless" data-slot="5"><div class="photo-emoji">📦</div><div class="photo-caption">5</div><button class="photo-remove">×</button></div>
+        </div>
+        <div class="product-mini"><div class="product-mini-text">商品写真</div></div>
+
+        <div class="badges" data-product="stainless">
+          <span class="badge all-badge" style="background:#6FA87A;">SUS316医療グレード</span>
+          <span class="badge all-badge" style="background:#6FA87A;">保温保冷6時間</span>
+          <span class="badge all-badge" style="background:#6FA87A;">漏れない</span>
+        </div>
+        <div class="lineup" data-product="stainless">
+          <div class="color-chip" style="background:#A8C4B0;"></div>
+          <div class="color-chip" style="background:#E8C0B8;"></div>
+          <div class="color-chip" style="background:#C8D4C0;"></div>
+          <div class="color-chip" style="background:#E8E0D0;"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- One-touch -->
+    <div class="product-section">
+      <div class="product-label">③ Onetouch</div>
+      <div class="thumb">
+        <div class="bg-right" id="ot-bg-right" style="background:#D8EAE4;"></div>
+        <div class="bg-anchor" id="ot-bg-anchor" style="background:#B8D8C8;"></div>
+        <div class="diagonal-line"></div>
+        <div class="logo">
+          <div class="logo-circle" id="ot-logo" style="color:#3D6B52;">G</div>
+        </div>
+        <div class="thumb-title" contenteditable="true" data-product="onetouch">ワンタッチ式ストローマグ</div>
+        <div class="photo-area" data-product="onetouch" data-slot="1">
+          <div class="photo-emoji">👶</div>
+          <div class="photo-caption">赤ちゃん写真<br>ワンタッチを押す瞬間</div>
+          <button class="photo-remove">×</button>
+        </div>
+        <div class="photo-strip">
+          <div class="photo-area-sub" data-product="onetouch" data-slot="2"><div class="photo-emoji">📦</div><div class="photo-caption">2</div><button class="photo-remove">×</button></div>
+          <div class="photo-area-sub" data-product="onetouch" data-slot="3"><div class="photo-emoji">📦</div><div class="photo-caption">3</div><button class="photo-remove">×</button></div>
+          <div class="photo-area-sub" data-product="onetouch" data-slot="4"><div class="photo-emoji">📦</div><div class="photo-caption">4</div><button class="photo-remove">×</button></div>
+          <div class="photo-area-sub" data-product="onetouch" data-slot="5"><div class="photo-emoji">📦</div><div class="photo-caption">5</div><button class="photo-remove">×</button></div>
+        </div>
+        <div class="product-mini"><div class="product-mini-text">商品写真</div></div>
+
+        <div class="badges" data-product="onetouch">
+          <span class="badge all-badge" style="background:#6FA87A;">ワンタッチ開閉</span>
+          <span class="badge all-badge" style="background:#6FA87A;">PPSU素材</span>
+          <span class="badge all-badge" style="background:#6FA87A;">食洗機OK</span>
+        </div>
+        <div class="lineup" data-product="onetouch">
+          <div class="color-chip" style="background:#8DC4A0;"></div>
+          <div class="color-chip" style="background:#E8C8D8;"></div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+
+<!-- ===== COLOR SELECTOR ===== -->
+<div>
+  <div class="section-title" style="margin-bottom:12px;">カラーを選択（50色）</div>
+  <div class="color-target-row">
+    <span class="color-target-label">変更対象：</span>
+    <button class="color-target-btn active" data-target="all">全て</button>
+    <button class="color-target-btn" data-target="ppsu">① PPSU</button>
+    <button class="color-target-btn" data-target="stainless">② Stainless</button>
+    <button class="color-target-btn" data-target="onetouch">③ OneTouch</button>
+  </div>
+  <div class="color-grid" id="color-grid"></div>
+</div>
+
+<!-- ===== 保存セクション ===== -->
+<div class="save-section">
+  <div class="section-title" style="border-left-color:#4A90E2; margin-bottom:10px;">保存</div>
+  <div class="save-row">
+    <span class="save-label">PNG書き出し</span>
+    <button class="save-png-btn" data-product="ppsu">① PPSU</button>
+    <button class="save-png-btn" data-product="stainless">② Stainless</button>
+    <button class="save-png-btn" data-product="onetouch">③ OneTouch</button>
+    <button class="save-png-btn save-all-btn" data-product="all">全て</button>
+  </div>
+  <div class="save-row">
+    <span class="save-label">編集状態</span>
+    <button id="state-save-btn">💾 保存</button>
+    <button id="state-load-btn">📂 読み込む</button>
+    <input type="file" id="state-file-input" accept=".json" style="display:none">
+    <span id="state-status"></span>
+  </div>
+</div>
+
+<script>
+(function() {
+  var COLORS = [
+    // ===== パステル系 (1-20) =====
+    { id:'1',  name:'1：くすみミント',          desc:'韓国ベビーブランドの定番。自然・安心感。',               anchor:'#B8D8C8', badge:'#6FA87A', logo:'#3D6B52', rights:['#F5EAD8','#EED8D8','#D8EAE4'], sw:['#B8D8C8','#F5EAD8','#6FA87A'] },
+    { id:'2',  name:'2：バターイエロー',         desc:'明るく元気。男女問わず。春・夏向け。',                    anchor:'#F0DE9A', badge:'#C8A030', logo:'#B89A20', rights:['#FAF3E0','#FFF5E0','#FAFAEE'], sw:['#F0DE9A','#FAF3E0','#C8A030'] },
+    { id:'3',  name:'3：パウダーモーブ',         desc:'上品・独自性。他社と被らない。Instagram映え。',          anchor:'#C4B0D4', badge:'#9A78B8', logo:'#7A5A9A', rights:['#F5EEF8','#EEE4F4','#EAF0F0'], sw:['#C4B0D4','#F5EEF8','#9A78B8'] },
+    { id:'4',  name:'4：ダスティコーラル',       desc:'温かみ・親しみやすい。女の子ママに◎。',                  anchor:'#EEAA98', badge:'#C06048', logo:'#B85A40', rights:['#FEF0EA','#FAE4DC','#EEF4EC'], sw:['#EEAA98','#FEF0EA','#C06048'] },
+    { id:'5',  name:'5：アッシュブルー',         desc:'清潔感・信頼感。医療グレード訴求と相性◎。',              anchor:'#A4BECC', badge:'#4878A0', logo:'#4878A0', rights:['#EEF4F8','#F0E8E8','#E4F0F4'], sw:['#A4BECC','#EEF4F8','#4878A0'] },
+    { id:'6',  name:'6：ラベンダーグレー',       desc:'北欧系・落ち着き。高級感とやさしさが両立。',              anchor:'#BEB8D0', badge:'#7870A8', logo:'#6860A0', rights:['#F2F0F8','#F4ECF4','#ECF4F0'], sw:['#BEB8D0','#F2F0F8','#7870A8'] },
+    { id:'7',  name:'7：ピーチクリーム',         desc:'肌色系の柔らかさ。離乳食期ママに安心感。',               anchor:'#F2C8B0', badge:'#C87848', logo:'#C07848', rights:['#FDF4EE','#F8E8E8','#EEF4EE'], sw:['#F2C8B0','#FDF4EE','#C87848'] },
+    { id:'8',  name:'8：セージ×ウォームベージュ', desc:'ナチュラル・オーガニック。現在案より濃くて存在感。',     anchor:'#9EC4A4', badge:'#4A8A58', logo:'#4A8A58', rights:['#F4EFE4','#EEE4E4','#E4EEE8'], sw:['#9EC4A4','#F4EFE4','#4A8A58'] },
+    { id:'9',  name:'9：スモーキーターコイズ',   desc:'爽やか＋個性。SUS316・シームレス訴求に合う。',           anchor:'#90C8C0', badge:'#38908A', logo:'#2A7870', rights:['#EAF6F4','#F0E8E8','#E0F2EE'], sw:['#90C8C0','#EAF6F4','#38908A'] },
+    { id:'10', name:'10：ミルキーピンク',        desc:'赤ちゃんらしい女の子向け。ストロー練習・離乳食に◎。',    anchor:'#F0C0CC', badge:'#C06880', logo:'#B05870', rights:['#FEF0F2','#F8EAEA','#F0EEF4'], sw:['#F0C0CC','#FEF0F2','#C06880'] },
+    { id:'11', name:'11：ウォームサンド',        desc:'性別問わず中立色。高級感と親しみやすさのバランス◎。',    anchor:'#E0CEB0', badge:'#A08050', logo:'#906840', rights:['#F8F4EC','#F4EEEA','#EEF4EE'], sw:['#E0CEB0','#F8F4EC','#A08050'] },
+    { id:'12', name:'12：ダスティスカイ',        desc:'澄んだ空色。清潔感と開放感。外出シーン訴求に合う。',      anchor:'#A8CCE0', badge:'#3870A0', logo:'#3070A0', rights:['#ECF4FA','#F2E8EC','#E4F0F6'], sw:['#A8CCE0','#ECF4FA','#3870A0'] },
+    { id:'13', name:'13：アプリコット',          desc:'元気で温かい。検索一覧で目立ちやすい。',                  anchor:'#F4C090', badge:'#D07830', logo:'#C06820', rights:['#FEF4E8','#FAE8DC','#EEF4E8'], sw:['#F4C090','#FEF4E8','#D07830'] },
+    { id:'14', name:'14：フォググレージュ',      desc:'ミニマル・上品。情報を絞ってブランド力で見せる。',        anchor:'#D8D4CC', badge:'#887870', logo:'#706860', rights:['#F8F6F4','#F4F0EE','#F0F4F2'], sw:['#D8D4CC','#F8F6F4','#887870'] },
+    { id:'15', name:'15：ローズウォーター',      desc:'透明感のある薄ピンク。清楚・ナチュラル。',               anchor:'#F0D0D8', badge:'#C07888', logo:'#B07080', rights:['#FEF4F6','#F8F0E8','#EEF4F4'], sw:['#F0D0D8','#FEF4F6','#C07888'] },
+    { id:'16', name:'16：ミントホワイト',        desc:'白に近いクリーンなミント。バッジが映える視認性◎。',      anchor:'#CCE8DC', badge:'#48906A', logo:'#3A8060', rights:['#F0FAF4','#F4EAE8','#E8F4F0'], sw:['#CCE8DC','#F0FAF4','#48906A'] },
+    { id:'17', name:'17：スモーキーライラック',  desc:'グレー×紫の中間。落ち着いた個性。高品質感が出る。',      anchor:'#C0B4CC', badge:'#806898', logo:'#705888', rights:['#F4F0F8','#F0ECF8','#ECF4F0'], sw:['#C0B4CC','#F4F0F8','#806898'] },
+    { id:'18', name:'18：テラコッタ',            desc:'土っぽい温かみ。韓国ブランドで流行中のアースカラー。',   anchor:'#D4A090', badge:'#A05840', logo:'#904030', rights:['#FAF0EC','#F4E8E0','#ECF0E8'], sw:['#D4A090','#FAF0EC','#A05840'] },
+    { id:'19', name:'19：アイスグリーン',        desc:'清涼感・透明感。夏向け。ステンレス保冷訴求と相性◎。',   anchor:'#B0DCC8', badge:'#3A8868', logo:'#2A7858', rights:['#E8F8F0','#F4E8E8','#DFF4EC'], sw:['#B0DCC8','#E8F8F0','#3A8868'] },
+    { id:'20', name:'20：クリームホワイト',      desc:'最もシンプル。商品と写真を引き立てるベーシック。',        anchor:'#F4EEE4', badge:'#888070', logo:'#807060', rights:['#FDFAF6','#F8F2EC','#F4F8F4'], sw:['#F4EEE4','#FDFAF6','#888070'] },
+
+    // ===== ビビッド系 (21-25) =====
+    { id:'21', name:'21：バイブラントコーラル',  desc:'目を引く鮮やかなコーラル。検索一覧で圧倒的に目立つ。',    anchor:'#FF6B6B', badge:'#D63031', logo:'#B71C1C', rights:['#FFF5F5','#FFF0EE','#FFEEEE'], sw:['#FF6B6B','#FFF5F5','#D63031'] },
+    { id:'22', name:'22：エレクトリックブルー',  desc:'清潔感×インパクト。信頼感と活発さを両立。',              anchor:'#4A90E2', badge:'#2060C0', logo:'#1A4A9A', rights:['#EEF4FC','#E8F0FA','#EAF4FC'], sw:['#4A90E2','#EEF4FC','#2060C0'] },
+    { id:'23', name:'23：サンシャインイエロー',  desc:'元気・明るさ全開。春夏の新商品ローンチに◎。',            anchor:'#FFD93D', badge:'#C89A00', logo:'#A07800', rights:['#FFFBEE','#FFF8E0','#FFFAEE'], sw:['#FFD93D','#FFFBEE','#C89A00'] },
+    { id:'24', name:'24：ネオンミント',          desc:'爽快感と新鮮さ。夏・アクティブシーンに強い。',            anchor:'#00D2A0', badge:'#009970', logo:'#007A5A', rights:['#E0FAF4','#EAF8F4','#E0F8F0'], sw:['#00D2A0','#E0FAF4','#009970'] },
+    { id:'25', name:'25：ホットピンク',          desc:'インパクト大。若い女性ターゲットに刺さる色。',            anchor:'#FF4D8D', badge:'#D01060', logo:'#A00048', rights:['#FFF0F5','#FFECF4','#FFECF8'], sw:['#FF4D8D','#FFF0F5','#D01060'] },
+
+    // ===== ダーク系 (26-31) =====
+    { id:'26', name:'26：ディープネイビー',      desc:'高級感・信頼感の王道。ステンレス素材との相性抜群。',      anchor:'#1A3A5C', badge:'#1A3A5C', logo:'#1A3A5C', rights:['#E8EEF4','#EAF0F8','#E4ECF4'], sw:['#1A3A5C','#E8EEF4','#4A7AAA'] },
+    { id:'27', name:'27：フォレストグリーン',    desc:'深みある緑。オーガニック・ナチュラル高品質ブランド感。',  anchor:'#2D6A2D', badge:'#2D6A2D', logo:'#2D6A2D', rights:['#E8F4E8','#EEF4E8','#E4F0E4'], sw:['#2D6A2D','#E8F4E8','#4A8A4A'] },
+    { id:'28', name:'28：バーガンディ',          desc:'大人っぽい深みのある赤紫。プレミアム感を出したいとき。',  anchor:'#7B2D3A', badge:'#7B2D3A', logo:'#7B2D3A', rights:['#F8EEF0','#F4E8EA','#F8EAF0'], sw:['#7B2D3A','#F8EEF0','#A04050'] },
+    { id:'29', name:'29：チャコール',            desc:'モダン・シンプル。性別・年代を問わない汎用性。',          anchor:'#3A3A3A', badge:'#3A3A3A', logo:'#3A3A3A', rights:['#F0F0F0','#EEEEEE','#F2F2F2'], sw:['#3A3A3A','#F0F0F0','#606060'] },
+    { id:'30', name:'30：ディープパープル',      desc:'独自性・神秘性。競合が使わない色で一気に差別化。',        anchor:'#4A2070', badge:'#4A2070', logo:'#4A2070', rights:['#F0EAF8','#EEEAF8','#EAE8F8'], sw:['#4A2070','#F0EAF8','#7050A0'] },
+    { id:'31', name:'31：コーヒーブラウン',      desc:'温かみと落ち着き。育児の安心感を自然に演出。',            anchor:'#5A3020', badge:'#5A3020', logo:'#5A3020', rights:['#F4EEE8','#F0EAE4','#F4EAE4'], sw:['#5A3020','#F4EEE8','#8A5840'] },
+
+    // ===== アース系 (32-36) =====
+    { id:'32', name:'32：ディープテラコッタ',    desc:'現行より深みあり。アース系トレンドど真ん中。',           anchor:'#C04830', badge:'#A03820', logo:'#802810', rights:['#FAF0EC','#F8ECEC','#F8EEEC'], sw:['#C04830','#FAF0EC','#A03820'] },
+    { id:'33', name:'33：オリーブカーキ',        desc:'ミリタリー×ナチュラル。男性ターゲット展開にも使える。',  anchor:'#7A8040', badge:'#5A6030', logo:'#4A5020', rights:['#F4F4E8','#F0F0E4','#F4F2E4'], sw:['#7A8040','#F4F4E8','#5A6030'] },
+    { id:'34', name:'34：マスタード',            desc:'秋冬感と個性。くすみ系の中でも存在感が強い。',            anchor:'#C89828', badge:'#A07818', logo:'#805808', rights:['#FAF4E0','#F8F0DC','#FAF4E4'], sw:['#C89828','#FAF4E0','#A07818'] },
+    { id:'35', name:'35：ブリックレッド',        desc:'焼きレンガ色。温もりと強さ。競合との差別化に効く。',      anchor:'#B84030', badge:'#983020', logo:'#782010', rights:['#FAF0EE','#F8ECEC','#FAF0EE'], sw:['#B84030','#FAF0EE','#983020'] },
+    { id:'36', name:'36：ウォールナット',        desc:'深いブラウン木目調。職人感・手仕事感を演出。',            anchor:'#7A5030', badge:'#5A3818', logo:'#4A2808', rights:['#F4EEE4','#F0EAE0','#F4ECDC'], sw:['#7A5030','#F4EEE4','#5A3818'] },
+
+    // ===== モノクロ系 (37-41) =====
+    { id:'37', name:'37：スノーホワイト',        desc:'極限のシンプル。商品写真をそのまま主役にしたいとき。',    anchor:'#F8F8F6', badge:'#888880', logo:'#555550', rights:['#FAFAF8','#F8F8F6','#FAFAF8'], sw:['#F8F8F6','#FAFAF8','#888880'] },
+    { id:'38', name:'38：ライトグレー',          desc:'上品なグレー基調。ミニマル志向ブランドに最適。',          anchor:'#D8D8D8', badge:'#888888', logo:'#555555', rights:['#F4F4F4','#F0F0F0','#F2F2F2'], sw:['#D8D8D8','#F4F4F4','#888888'] },
+    { id:'39', name:'39：ミッドグレー',          desc:'モダン・洗練。高価格帯の商品によく合う中間グレー。',      anchor:'#909090', badge:'#606060', logo:'#404040', rights:['#F0F0F0','#EEEEEE','#F2F2F2'], sw:['#909090','#F0F0F0','#606060'] },
+    { id:'40', name:'40：ダークグレー',          desc:'重厚感あるダークグレー。メンズ向け・高級路線に◎。',      anchor:'#505050', badge:'#303030', logo:'#303030', rights:['#ECECEC','#E8E8E8','#EEEEEE'], sw:['#505050','#ECECEC','#303030'] },
+    { id:'41', name:'41：ジェットブラック',      desc:'最高の高級感。全色中最も目立つ。コントラスト最大。',      anchor:'#1A1A1A', badge:'#0A0A0A', logo:'#1A1A1A', rights:['#E4E4E4','#E0E0E0','#E8E8E8'], sw:['#1A1A1A','#E4E4E4','#404040'] },
+
+    // ===== ジュエル系 (42-46) =====
+    { id:'42', name:'42：エメラルド',            desc:'宝石のような深い緑。高級感と清潔感を同時に表現。',        anchor:'#0A7A5A', badge:'#0A7A5A', logo:'#0A7A5A', rights:['#E0F4EE','#E4F4F0','#E0F0EC'], sw:['#0A7A5A','#E0F4EE','#3A9A7A'] },
+    { id:'43', name:'43：サファイア',            desc:'深い青の高級感。信頼・品質訴求に王道カラー。',            anchor:'#1A4A9A', badge:'#1A4A9A', logo:'#1A4A9A', rights:['#EAF0FA','#E8EEF8','#EAF0FC'], sw:['#1A4A9A','#EAF0FA','#4A70BA'] },
+    { id:'44', name:'44：ルビー',                desc:'情熱的な深紅。贈り物・ギフト需要の訴求に強い。',          anchor:'#9A1A30', badge:'#9A1A30', logo:'#9A1A30', rights:['#FAE8EC','#F8E4E8','#FAE8EC'], sw:['#9A1A30','#FAE8EC','#C04060'] },
+    { id:'45', name:'45：アメジスト',            desc:'深みのある紫。個性的なブランドイメージ構築に。',          anchor:'#7A3A8A', badge:'#7A3A8A', logo:'#7A3A8A', rights:['#F4EAF8','#F0E8F6','#F4EAF8'], sw:['#7A3A8A','#F4EAF8','#A060BA'] },
+    { id:'46', name:'46：ゴールデントパーズ',    desc:'黄金感・プレミアム。数量限定・高価格帯に映える。',        anchor:'#C8980A', badge:'#A07808', logo:'#806006', rights:['#FAF4DC','#F8F0D8','#FAF4E0'], sw:['#C8980A','#FAF4DC','#A07808'] },
+
+    // ===== トレンド系 (47-50) =====
+    { id:'47', name:'47：コーラルレッド',        desc:'パステルより強め。Z世代に響く鮮やかコーラル。',           anchor:'#FF6B50', badge:'#D84030', logo:'#B82818', rights:['#FFF0EE','#FFECEC','#FFF0EE'], sw:['#FF6B50','#FFF0EE','#D84030'] },
+    { id:'48', name:'48：セラドン',              desc:'灰がかった青緑。北欧・和食器テイスト。落ち着いた個性。',  anchor:'#86A898', badge:'#4A7860', logo:'#3A6850', rights:['#EEF4F0','#EAF0EC','#ECF4F0'], sw:['#86A898','#EEF4F0','#4A7860'] },
+    { id:'49', name:'49：インディゴ',            desc:'デニム系の深い青紫。ユニセックスで幅広い層に対応。',      anchor:'#3A3A7A', badge:'#3A3A7A', logo:'#3A3A7A', rights:['#EAEAF4','#E8E8F4','#EAEAF8'], sw:['#3A3A7A','#EAEAF4','#6060A0'] },
+    { id:'50', name:'50：ディープマゼンタ',      desc:'強烈な個性。競合ゼロの色で即認知度アップを狙える。',      anchor:'#A02080', badge:'#A02080', logo:'#A02080', rights:['#F8E8F4','#F6E4F2','#F8E8F6'], sw:['#A02080','#F8E8F4','#C050A0'] },
+  ];
+
+  var colorTarget = 'all'; // 'all' | 'ppsu' | 'stainless' | 'onetouch'
+
+  // 各商品の現在の色を記憶（初期値は同じ）
+  var productColors = { ppsu: null, stainless: null, onetouch: null };
+
+  function applyColorToProduct(c, product) {
+    var idMap = {
+      ppsu:      { anchor: 'ppsu-bg-anchor', right: 'ppsu-bg-right', logo: 'ppsu-logo', rightIdx: 0 },
+      stainless: { anchor: 'sl-bg-anchor',   right: 'sl-bg-right',   logo: 'sl-logo',   rightIdx: 1 },
+      onetouch:  { anchor: 'ot-bg-anchor',   right: 'ot-bg-right',   logo: 'ot-logo',   rightIdx: 2 },
+    };
+    var m = idMap[product];
+    document.getElementById(m.anchor).style.background = c.anchor;
+    document.getElementById(m.right).style.background  = c.rights[m.rightIdx];
+    document.getElementById(m.logo).style.color        = c.logo;
+    // そのproductのバッジのみ更新
+    document.querySelectorAll('.badges[data-product="' + product + '"] .all-badge').forEach(function(el) {
+      el.style.background = c.badge;
+    });
+    productColors[product] = c;
+  }
+
+  function applyColor(c, target) {
+    var t = target !== undefined ? target : colorTarget;
+    if (t === 'all') {
+      applyColorToProduct(c, 'ppsu');
+      applyColorToProduct(c, 'stainless');
+      applyColorToProduct(c, 'onetouch');
+    } else {
+      applyColorToProduct(c, t);
+    }
+    document.getElementById('current-label').textContent = c.name;
+  }
+
+  function buildGrid() {
+    var grid = document.getElementById('color-grid');
+    COLORS.forEach(function(c, idx) {
+      var card = document.createElement('div');
+      card.className = 'color-card' + (idx === 25 ? ' selected' : '');
+
+      var mt = document.createElement('div');
+      mt.className = 'mini-thumb';
+
+      var bgR = document.createElement('div'); bgR.className = 'mini-bg-right'; bgR.style.background = c.rights[0];
+      var bgA = document.createElement('div'); bgA.className = 'mini-bg-anchor'; bgA.style.background = c.anchor;
+      var dg  = document.createElement('div'); dg.className  = 'mini-diag';
+      var lg  = document.createElement('div'); lg.className  = 'mini-logo-el'; lg.style.color = c.logo; lg.textContent = 'G';
+      var ph  = document.createElement('div'); ph.className  = 'mini-photo-el'; ph.textContent = '👶';
+      var bw  = document.createElement('div'); bw.className  = 'mini-badges-el';
+
+      ['PPSU','BPAフリー','6M〜'].forEach(function(txt) {
+        var b = document.createElement('span'); b.className = 'mini-badge-el'; b.style.background = c.badge; b.textContent = txt;
+        bw.appendChild(b);
+      });
+
+      [bgR,bgA,dg,lg,ph,bw].forEach(function(el){ mt.appendChild(el); });
+
+      var info = document.createElement('div'); info.className = 'color-info';
+      var nr   = document.createElement('div'); nr.className = 'color-name-row';
+      var nm   = document.createElement('div'); nm.className = 'color-name-el'; nm.textContent = c.name;
+      var st   = document.createElement('div'); st.className = 'selected-tag';  st.textContent = '選択中';
+      nr.appendChild(nm); nr.appendChild(st);
+
+      var dc = document.createElement('div'); dc.className = 'color-desc-el'; dc.textContent = c.desc;
+      var cr = document.createElement('div'); cr.className = 'color-chips-row';
+      c.sw.forEach(function(s){ var sw = document.createElement('div'); sw.className='mini-swatch-el'; sw.style.background=s; cr.appendChild(sw); });
+
+      [nr,dc,cr].forEach(function(el){ info.appendChild(el); });
+      card.appendChild(mt); card.appendChild(info);
+
+      card.addEventListener('click', function() {
+        document.querySelectorAll('.color-card').forEach(function(el){ el.classList.remove('selected'); });
+        card.classList.add('selected');
+        applyColor(c);
+      });
+
+      grid.appendChild(card);
+    });
+  }
+
+  // Badge state defaults (used when adding new badges)
+  var currentFontSize = 14;
+  var currentPad = 10;
+  var currentRadius = 'circle';
+  var currentBadgeHex = '#6FA87A';
+  var peCircleMode = true;
+
+  // アウトライン切替
+  var currentOutline = 'none';
+  document.querySelectorAll('.outline-btn').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      document.querySelectorAll('.outline-btn').forEach(function(b) { b.classList.remove('active'); });
+      btn.classList.add('active');
+      currentOutline = btn.dataset.outline;
+      applyOutline();
+    });
+  });
+
+  function applyOutline() {
+    document.querySelectorAll('.badge').forEach(function(el) {
+      if (currentOutline === 'none') {
+        el.style.border = 'none';
+        el.style.opacity = '1';
+      } else if (currentOutline === 'outline') {
+        var bg = el.style.background || el.style.backgroundColor;
+        el.style.border = '2px solid ' + bg;
+        el.style.background = 'transparent';
+        el.style.color = 'white';
+      } else if (currentOutline === 'both') {
+        var bg2 = el.dataset.origBg || el.style.background || el.style.backgroundColor;
+        el.dataset.origBg = bg2;
+        el.style.border = '2px solid white';
+        el.style.background = bg2;
+      }
+    });
+  }
+
+
+  document.querySelectorAll('.align-btn').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      document.querySelectorAll('.align-btn').forEach(function(b) { b.classList.remove('active'); });
+      btn.classList.add('active');
+      document.querySelectorAll('.badges').forEach(function(el) {
+        el.style.justifyContent = btn.dataset.align;
+      });
+    });
+  });
+
+  // ===== COLOR CHIP CONTROLS =====
+  var currentChipSize = 40;
+  var chipEditTarget = null;
+  var chipPopup = document.getElementById('chip-edit-popup');
+
+  function rgbToHex(rgb) {
+    if (!rgb) return '#cccccc';
+    if (rgb.startsWith('#')) return rgb;
+    var m = rgb.match(/\d+/g);
+    if (!m) return '#cccccc';
+    return '#' + m.slice(0,3).map(function(v){ return ('0'+parseInt(v).toString(16)).slice(-2); }).join('');
+  }
+
+  function showChipPopup(chip, e) {
+    chipEditTarget = chip;
+    document.getElementById('cpe-color').value = rgbToHex(chip.style.backgroundColor || chip.style.background);
+    var sz = parseInt(chip.style.width) || currentChipSize;
+    document.getElementById('cpe-size').value = sz;
+    document.getElementById('cpe-size-val').textContent = sz + 'px';
+    chipPopup.classList.add('visible');
+    var rect = chip.getBoundingClientRect();
+    var top  = rect.bottom + window.scrollY + 8;
+    var left = rect.left   + window.scrollX;
+    if (left + 230 > window.innerWidth) left = window.innerWidth - 240;
+    chipPopup.style.top  = top + 'px';
+    chipPopup.style.left = left + 'px';
+    e.stopPropagation(); e.preventDefault();
+  }
+
+  document.getElementById('cpe-color').addEventListener('input', function() {
+    if (chipEditTarget) chipEditTarget.style.background = this.value;
+  });
+  document.getElementById('cpe-size').addEventListener('input', function() {
+    var v = this.value;
+    document.getElementById('cpe-size-val').textContent = v + 'px';
+    currentChipSize = parseInt(v);
+    document.querySelectorAll('.color-chip').forEach(function(c) {
+      c.style.width = v + 'px'; c.style.height = v + 'px';
+    });
+  });
+  document.getElementById('chip-edit-delete').addEventListener('click', function() {
+    if (!chipEditTarget) return;
+    var lineup = chipEditTarget.closest('.lineup');
+    if (lineup && lineup.querySelectorAll('.color-chip').length <= 1) return;
+    chipEditTarget.parentNode && chipEditTarget.parentNode.removeChild(chipEditTarget);
+    chipPopup.classList.remove('visible'); chipEditTarget = null;
+  });
+  document.getElementById('chip-edit-delete-all').addEventListener('click', function() {
+    if (!chipEditTarget) return;
+    var lineup = chipEditTarget.closest('.lineup');
+    if (!lineup) return;
+    var product = lineup.dataset.product;
+    document.querySelectorAll('.lineup[data-product="' + product + '"]').forEach(function(l) {
+      l.querySelectorAll('.color-chip').forEach(function(c) { c.remove(); });
+    });
+    chipPopup.classList.remove('visible'); chipEditTarget = null;
+  });
+  document.addEventListener('mousedown', function(e) {
+    if (chipPopup.classList.contains('visible') && !chipPopup.contains(e.target)) {
+      chipPopup.classList.remove('visible'); chipEditTarget = null;
+    }
+  });
+
+  function makeChipEditable(chip) {
+    chip.style.cursor = 'pointer';
+    chip.addEventListener('click', function(e) { showChipPopup(chip, e); });
+    chip.addEventListener('mousedown', function(e) { e.stopPropagation(); });
+  }
+
+  // 既存チップを編集可能に
+  document.querySelectorAll('.color-chip').forEach(makeChipEditable);
+
+  function addChipFor(product) {
+    document.querySelectorAll('.lineup[data-product="' + product + '"]').forEach(function(lineup) {
+      var chip = document.createElement('div');
+      chip.className = 'color-chip';
+      chip.style.background = '#cccccc';
+      chip.style.width  = currentChipSize + 'px';
+      chip.style.height = currentChipSize + 'px';
+      makeChipEditable(chip);
+      // Insert before the "+" button
+      var addBtn = lineup.querySelector('.add-chip-btn');
+      addBtn ? lineup.insertBefore(chip, addBtn) : lineup.appendChild(chip);
+    });
+  }
+
+  // Inject "+" add buttons into all badge and lineup containers
+  document.querySelectorAll('.badges').forEach(function(container) {
+    var btn = document.createElement('button');
+    btn.className = 'add-badge-btn';
+    btn.textContent = '＋';
+    btn.addEventListener('click', function(e) { e.stopPropagation(); addBadgeFor(container.dataset.product); });
+    btn.addEventListener('mousedown', function(e) { e.stopPropagation(); });
+    container.appendChild(btn);
+  });
+
+  document.querySelectorAll('.lineup').forEach(function(container) {
+    var btn = document.createElement('button');
+    btn.className = 'add-chip-btn';
+    btn.textContent = '＋';
+    btn.addEventListener('click', function(e) { e.stopPropagation(); addChipFor(container.dataset.product); });
+    btn.addEventListener('mousedown', function(e) { e.stopPropagation(); });
+    container.appendChild(btn);
+  });
+
+  // Badge click-to-edit popup
+  var editTarget = null;
+  var popup = document.getElementById('badge-edit-popup');
+  var input = document.getElementById('badge-edit-input');
+  var okBtn = document.getElementById('badge-edit-ok');
+
+  function showEditPopup(el, e) {
+    editTarget = el;
+    input.value = el.textContent.trim();
+
+    var fs = parseInt(el.style.fontSize) || currentFontSize;
+
+    // Detect circle vs normal mode
+    if (el.style.borderRadius === '50%') {
+      peCircleMode = true;
+      document.getElementById('pe-circle-row').style.display = 'flex';
+      document.getElementById('pe-style-row').style.display = 'none';
+      var sz = parseInt(el.style.width) || 68;
+      document.getElementById('pe-circle').value = sz;
+      document.getElementById('pe-circle-val').textContent = sz + 'px';
+      document.getElementById('pe-font').value = fs;
+      document.getElementById('pe-font-val').textContent = fs + 'px';
+      document.querySelectorAll('.pe-shape').forEach(function(b) {
+        b.classList.toggle('active', b.dataset.r === 'circle');
+      });
+    } else {
+      peCircleMode = false;
+      document.getElementById('pe-circle-row').style.display = 'none';
+      document.getElementById('pe-style-row').style.display = 'flex';
+      var pd = parseInt(el.style.paddingTop) || parseInt(el.style.padding) || currentPad;
+      var br = parseInt(el.style.borderRadius);
+      if (isNaN(br)) br = 50;
+      document.getElementById('pe-pad').value = pd;
+      document.getElementById('pe-pad-val').textContent = pd + 'px';
+      document.getElementById('pe-font-rect').value = fs;
+      document.getElementById('pe-font-rect-val').textContent = fs + 'px';
+      document.querySelectorAll('.pe-shape').forEach(function(b) {
+        b.classList.toggle('active', b.dataset.r !== 'circle' && parseInt(b.dataset.r) === br);
+      });
+    }
+
+    // Color
+    var hex = el.dataset.color || currentBadgeHex;
+    document.getElementById('pe-color').value = hex;
+
+    // Direction — read from parent badges container
+    var badgesContainer = el.closest('.badges');
+    var curDir = 'column';
+    if (badgesContainer) {
+      if (badgesContainer.classList.contains('dir-grid')) curDir = 'grid';
+      else if (badgesContainer.classList.contains('dir-row')) curDir = 'row';
+      else curDir = 'column';
+    }
+    document.querySelectorAll('.pe-dir').forEach(function(b) {
+      b.classList.toggle('active', b.dataset.dir === curDir);
+    });
+
+    // Position
+    popup.classList.add('visible');
+    var rect = el.getBoundingClientRect();
+    var top  = rect.bottom + window.scrollY + 8;
+    var left = rect.left   + window.scrollX;
+    if (left + 330 > window.innerWidth) left = window.innerWidth - 340;
+    if (top + 180 > window.innerHeight + window.scrollY) top = rect.top + window.scrollY - 190;
+    popup.style.top  = top  + 'px';
+    popup.style.left = left + 'px';
+    input.focus(); input.select();
+    e.stopPropagation(); e.preventDefault();
+  }
+
+  function applyEdit() {
+    if (!editTarget) return;
+    if (input.value.trim()) editTarget.textContent = input.value.trim();
+    popup.classList.remove('visible');
+    editTarget = null;
+  }
+
+  okBtn.addEventListener('click', applyEdit);
+  input.addEventListener('keydown', function(e) {
+    if (e.key === 'Enter') applyEdit();
+    if (e.key === 'Escape') { popup.classList.remove('visible'); editTarget = null; }
+  });
+  document.addEventListener('mousedown', function(e) {
+    if (popup.classList.contains('visible') && !popup.contains(e.target)) {
+      applyEdit();
+    }
+  });
+
+  // Font size (circle row)
+  document.getElementById('pe-font').addEventListener('input', function() {
+    var v = this.value;
+    document.getElementById('pe-font-val').textContent = v + 'px';
+    currentFontSize = parseInt(v);
+    if (editTarget) editTarget.style.fontSize = v + 'px';
+  });
+  // Font size (rect row)
+  document.getElementById('pe-font-rect').addEventListener('input', function() {
+    var v = this.value;
+    document.getElementById('pe-font-rect-val').textContent = v + 'px';
+    currentFontSize = parseInt(v);
+    if (editTarget) editTarget.style.fontSize = v + 'px';
+  });
+
+  // Padding
+  document.getElementById('pe-pad').addEventListener('input', function() {
+    var v = this.value;
+    document.getElementById('pe-pad-val').textContent = v + 'px';
+    currentPad = parseInt(v);
+    if (editTarget && !peCircleMode) {
+      editTarget.style.padding = v + 'px ' + (parseInt(v) * 2) + 'px';
+    }
+  });
+
+  // Circle size
+  document.getElementById('pe-circle').addEventListener('input', function() {
+    var v = this.value;
+    document.getElementById('pe-circle-val').textContent = v + 'px';
+    if (editTarget && peCircleMode) {
+      editTarget.style.width = v + 'px'; editTarget.style.height = v + 'px'; editTarget.style.minWidth = v + 'px';
+    }
+  });
+
+  // Shape buttons in popup
+  document.querySelectorAll('.pe-shape').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      document.querySelectorAll('.pe-shape').forEach(function(b) { b.classList.remove('active'); });
+      btn.classList.add('active');
+      var r = btn.dataset.r;
+      if (r === 'circle') {
+        peCircleMode = true; currentRadius = 'circle';
+        document.getElementById('pe-circle-row').style.display = 'flex';
+        document.getElementById('pe-style-row').style.display = 'none';
+        if (editTarget) {
+          var sz = parseInt(document.getElementById('pe-circle').value) || 68;
+          editTarget.style.width = sz + 'px'; editTarget.style.height = sz + 'px'; editTarget.style.minWidth = sz + 'px';
+          editTarget.style.padding = '0'; editTarget.style.borderRadius = '50%';
+          editTarget.style.display = 'inline-flex'; editTarget.style.alignItems = 'center';
+          editTarget.style.justifyContent = 'center'; editTarget.style.whiteSpace = 'normal';
+          editTarget.style.lineHeight = '1.3'; editTarget.style.textAlign = 'center';
+        }
+      } else {
+        peCircleMode = false; currentRadius = parseInt(r);
+        document.getElementById('pe-circle-row').style.display = 'none';
+        document.getElementById('pe-style-row').style.display = 'flex';
+        if (editTarget) {
+          editTarget.style.borderRadius = r + 'px';
+          editTarget.style.width = ''; editTarget.style.height = ''; editTarget.style.minWidth = '';
+          editTarget.style.display = ''; editTarget.style.alignItems = ''; editTarget.style.justifyContent = '';
+          editTarget.style.whiteSpace = 'nowrap'; editTarget.style.lineHeight = ''; editTarget.style.textAlign = '';
+          var pd = parseInt(document.getElementById('pe-pad').value) || currentPad;
+          editTarget.style.padding = pd + 'px ' + (pd * 2) + 'px';
+        }
+      }
+    });
+  });
+
+  // Color picker
+  document.getElementById('pe-color').addEventListener('input', function() {
+    currentBadgeHex = this.value;
+    if (editTarget) { editTarget.style.background = this.value; editTarget.dataset.color = this.value; }
+  });
+
+  // Delete badge
+  document.getElementById('badge-edit-delete').addEventListener('click', function() {
+    if (!editTarget) return;
+    var container = editTarget.closest('.badges');
+    if (container && container.querySelectorAll('.badge').length <= 1) return;
+    editTarget.parentNode && editTarget.parentNode.removeChild(editTarget);
+    popup.classList.remove('visible'); editTarget = null;
+  });
+
+  // Direction buttons
+  document.querySelectorAll('.pe-dir').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      document.querySelectorAll('.pe-dir').forEach(function(b) { b.classList.remove('active'); });
+      btn.classList.add('active');
+      var dir = btn.dataset.dir;
+      if (editTarget) {
+        var product = editTarget.closest('.badges').dataset.product;
+        document.querySelectorAll('.badges[data-product="' + product + '"]').forEach(function(b) {
+          b.classList.remove('dir-row', 'dir-grid');
+          if (dir === 'row') b.classList.add('dir-row');
+          else if (dir === 'grid') b.classList.add('dir-grid');
+          // 'column' = no extra class (default)
+        });
+      }
+    });
+  });
+
+  function makeEditable(el) {
+    el.addEventListener('mouseup', function(e) {
+      if (el._wasDragged) { el._wasDragged = false; return; }
+      showEditPopup(el, e);
+    });
+  }
+
+  // 個別バッジドラッグ — .thumb直下に移してfreeに動かす
+  function makeBadgeDraggable(badge) {
+    var dragging = false, startX, startY, startLeft, startTop;
+
+    badge.addEventListener('mousedown', function(e) {
+      e.stopPropagation();
+      e.preventDefault();
+      dragging = true;
+      badge._wasDragged = false;
+
+      var thumb = badge.closest('.thumb');
+      var thumbRect = thumb.getBoundingClientRect();
+      var badgeRect = badge.getBoundingClientRect();
+
+      // .thumb直下にabsoluteで移す
+      var left = badgeRect.left - thumbRect.left;
+      var top  = badgeRect.top  - thumbRect.top;
+      badge.style.position = 'absolute';
+      badge.style.left = left + 'px';
+      badge.style.top  = top  + 'px';
+      badge.style.margin = '0';
+      badge.style.zIndex = '30';
+      thumb.appendChild(badge);
+
+      startX = e.clientX; startY = e.clientY;
+      startLeft = left; startTop = top;
+    });
+
+    document.addEventListener('mousemove', function(e) {
+      if (!dragging) return;
+      var dx = e.clientX - startX, dy = e.clientY - startY;
+      if (Math.abs(dx) > 2 || Math.abs(dy) > 2) badge._wasDragged = true;
+      var thumb = badge.closest('.thumb');
+      var nx = Math.max(0, Math.min(thumb.offsetWidth  - badge.offsetWidth,  startLeft + dx));
+      var ny = Math.max(0, Math.min(thumb.offsetHeight - badge.offsetHeight, startTop  + dy));
+      badge.style.left = nx + 'px';
+      badge.style.top  = ny + 'px';
+    });
+
+    document.addEventListener('mouseup', function() {
+      if (dragging) dragging = false;
+    });
+  }
+
+  function getCurrentBadgeColor() {
+    var b = document.querySelector('.badge');
+    return b ? (b.style.backgroundColor || b.style.background || '#6FA87A') : '#6FA87A';
+  }
+
+  // 商品別バッジ数
+  function getBadgeCount(product) {
+    var b = document.querySelector('.badges[data-product="' + product + '"]');
+    return b ? b.querySelectorAll('.badge').length : 0;
+  }
+
+  function updateBadgeDisplay(product) {
+    var el = document.querySelector('.badge-count[data-product="' + product + '"]');
+    if (el) el.textContent = getBadgeCount(product);
+  }
+
+  function addBadgeFor(product) {
+    document.querySelectorAll('.badges[data-product="' + product + '"]').forEach(function(container) {
+      var span = document.createElement('span');
+      span.className = 'badge all-badge';
+      span.style.background = currentBadgeHex;
+      span.dataset.color    = currentBadgeHex;
+      span.style.fontSize   = currentFontSize + 'px';
+      if (currentRadius === 'circle') {
+        var sz = parseInt(document.getElementById('pe-circle').value) || 68;
+        span.style.width = sz + 'px'; span.style.height = sz + 'px'; span.style.minWidth = sz + 'px';
+        span.style.padding = '0'; span.style.borderRadius = '50%';
+        span.style.display = 'inline-flex'; span.style.alignItems = 'center';
+        span.style.justifyContent = 'center'; span.style.whiteSpace = 'normal';
+        span.style.lineHeight = '1.3'; span.style.textAlign = 'center';
+      } else {
+        span.style.padding      = currentPad + 'px ' + (currentPad * 2) + 'px';
+        span.style.borderRadius = currentRadius + 'px';
+      }
+      span.textContent = 'バッジ';
+      makeEditable(span);
+      makeBadgeDraggable(span);
+      container.appendChild(span);
+    });
+    updateBadgeDisplay(product);
+  }
+
+  function removeBadgeFor(product) {
+    if (getBadgeCount(product) <= 1) return;
+    document.querySelectorAll('.badges[data-product="' + product + '"]').forEach(function(container) {
+      var badges = container.querySelectorAll('.badge');
+      if (badges.length > 0) container.removeChild(badges[badges.length - 1]);
+    });
+    updateBadgeDisplay(product);
+  }
+
+
+  // 既存バッジをクリック編集可能＋個別ドラッグ対応＋data-color初期化
+  document.querySelectorAll('.badge').forEach(function(el) {
+    if (!el.dataset.color) el.dataset.color = el.style.background || el.style.backgroundColor || '#6FA87A';
+    makeEditable(el);
+    makeBadgeDraggable(el);
+  });
+
+  // Draggable badges container
+  function makeDraggable(container) {
+    var dragging = false;
+    var startX, startY, startLeft, startTop;
+
+    container.addEventListener('mousedown', function(e) {
+      // バッジ個別クリック・ボタンは除外
+      if (e.target.classList.contains('badge') || e.target.classList.contains('add-badge-btn')) return;
+      if (e.target.closest('.badge')) return;
+      dragging = true;
+      container.classList.add('dragging');
+
+      var thumb = container.closest('.thumb');
+      var thumbRect = thumb.getBoundingClientRect();
+      var elRect = container.getBoundingClientRect();
+
+      // transform/right → top/left に変換
+      startLeft = elRect.left - thumbRect.left;
+      startTop  = elRect.top  - thumbRect.top;
+      container.style.left      = startLeft + 'px';
+      container.style.top       = startTop  + 'px';
+      container.style.right     = 'auto';
+      container.style.bottom    = 'auto';
+      container.style.transform = 'none';
+      startX = e.clientX;
+      startY = e.clientY;
+      e.preventDefault();
+    });
+
+    document.addEventListener('mousemove', function(e) {
+      if (!dragging) return;
+      var thumb = container.closest('.thumb');
+      var nx = Math.max(0, Math.min(thumb.offsetWidth  - container.offsetWidth,  startLeft + e.clientX - startX));
+      var ny = Math.max(0, Math.min(thumb.offsetHeight - container.offsetHeight, startTop  + e.clientY - startY));
+      container.style.left = nx + 'px';
+      container.style.top  = ny + 'px';
+    });
+
+    document.addEventListener('mouseup', function() {
+      if (dragging) { dragging = false; container.classList.remove('dragging'); }
+    });
+  }
+
+  document.querySelectorAll('.badges').forEach(makeDraggable);
+
+  // 初期HTMLバッジも編集・ドラッグ可能に
+  document.querySelectorAll('.badge').forEach(function(b) {
+    makeEditable(b);
+    makeBadgeDraggable(b);
+  });
+
+  var LAYOUT_LABELS = {
+    solid:    '■ 全面1色',
+    gradient: '◈ グラデーション',
+    frame:    '▣ 額縁フレーム',
+    corner:   '⬟ コーナーアクセント',
+    split:    '◧ 縦2分割',
+    topsplit: '⬓ 上下2分割',
+    wave:     '〜 波形',
+    diagonal: '↗ 斜め分割',
+    'diag-r': '↖ 逆斜め',
+    circle:   '◉ サークル'
+  };
+
+  // Layout switcher (windowに公開 — HTMLのonclickから呼ぶため)
+  window.switchLayout = function switchLayout(mode) {
+    document.body.classList.remove(
+      'mode-solid','mode-gradient','mode-frame','mode-corner',
+      'mode-split','mode-topsplit','mode-wave',
+      'mode-diagonal','mode-diag-r','mode-circle'
+    );
+    document.body.classList.add('mode-' + mode);
+    document.querySelectorAll('.layout-tab').forEach(function(btn) { btn.classList.remove('active'); });
+    var tab = document.getElementById('tab-' + mode);
+    if (tab) tab.classList.add('active');
+    var lbl = document.getElementById('layout-label-text');
+    if (lbl) lbl.textContent = LAYOUT_LABELS[mode] || mode;
+    document.querySelectorAll('.badges').forEach(makeDraggable);
+  }
+
+  // 初期状態：全面1色
+  switchLayout('solid');
+
+  // ターゲット切替ボタン
+  document.querySelectorAll('.color-target-btn').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      document.querySelectorAll('.color-target-btn').forEach(function(b) { b.classList.remove('active'); });
+      btn.classList.add('active');
+      colorTarget = btn.dataset.target;
+    });
+  });
+
+  buildGrid();
+  applyColor(COLORS[25], 'all'); // 26：ディープネイビー — 初期値
+
+  // ===== 写真ストリップ リサイズ =====
+  (function() {
+    var stripHeightPct = 22; // %
+
+    function setAllStrips(pct) {
+      stripHeightPct = Math.min(45, Math.max(8, pct));
+      document.querySelectorAll('.photo-strip').forEach(function(s) {
+        s.style.height = stripHeightPct + '%';
+      });
+    }
+
+    document.querySelectorAll('.photo-strip').forEach(function(strip) {
+      // ハンドル追加
+      var handle = document.createElement('div');
+      handle.className = 'photo-strip-handle';
+      handle.textContent = '⠿';
+      handle.title = 'ドラッグまたはスクロールでサイズ変更';
+      strip.appendChild(handle);
+
+      // ドラッグでリサイズ
+      var resizing = false, startY, startPct;
+      handle.addEventListener('mousedown', function(e) {
+        resizing = true;
+        startY   = e.clientY;
+        startPct = stripHeightPct;
+        e.preventDefault(); e.stopPropagation();
+      });
+      document.addEventListener('mousemove', function(e) {
+        if (!resizing) return;
+        var thumb = strip.closest('.thumb');
+        var th = thumb ? thumb.offsetHeight : 440;
+        var dy = startY - e.clientY; // ドラッグ上→高さ増
+        var newPct = startPct + (dy / th * 100);
+        setAllStrips(newPct);
+      });
+      document.addEventListener('mouseup', function() { resizing = false; });
+
+      // スクロールでリサイズ
+      strip.addEventListener('wheel', function(e) {
+        var hasAnyPhoto = strip.querySelector('.photo-area-sub.has-photo');
+        if (!hasAnyPhoto) return; // 写真なしのときはページスクロールを妨げない
+        e.preventDefault();
+        setAllStrips(stripHeightPct + (e.deltaY < 0 ? 2 : -2));
+      }, { passive: false });
+    });
+  })();
+})();
+</script>
+
+<script>
+// ===== PHOTO SELECT + EDIT =====
+(function() {
+  var fileInput = document.createElement('input');
+  fileInput.type = 'file';
+  fileInput.accept = 'image/*';
+  fileInput.style.display = 'none';
+  document.body.appendChild(fileInput);
+
+  var pendingProduct = null;
+  var pendingSlot    = '1';
+  var editingArea = null;
+
+  var pepPopup = document.getElementById('photo-edit-popup');
+
+  // Apply img style from state
+  function applyImgStyle(img, state) {
+    var area = img.closest('.photo-area') || img.closest('.photo-area-sub');
+    var aw = area ? area.offsetWidth  : 200;
+    var ah = area ? area.offsetHeight : 200;
+    var scale = state.zoom / 100;
+
+    img.style.position = 'absolute';
+    img.style.objectFit = '';
+    img.style.maxWidth  = 'none';
+    img.style.maxHeight = 'none';
+    img.style.transform = '';
+    img.style.borderRadius = '10px';
+
+    var w, h;
+    if (state.fit === 'cover') {
+      // 短辺をエリアに合わせてから scale
+      var r = Math.max(aw / img.naturalWidth, ah / img.naturalHeight) || 1;
+      w = Math.round(img.naturalWidth  * r * scale);
+      h = Math.round(img.naturalHeight * r * scale);
+    } else if (state.fit === 'fill') {
+      w = Math.round(aw * scale);
+      h = Math.round(ah * scale);
+    } else {
+      // contain: 長辺をエリアに合わせてから scale
+      var r2 = Math.min(aw / img.naturalWidth, ah / img.naturalHeight) || 1;
+      w = Math.round(img.naturalWidth  * r2 * scale);
+      h = Math.round(img.naturalHeight * r2 * scale);
+    }
+
+    img.style.width  = w + 'px';
+    img.style.height = h + 'px';
+    img.style.left   = Math.round((aw - w) / 2 + state.x) + 'px';
+    img.style.top    = Math.round((ah - h) / 2 + state.y) + 'px';
+  }
+
+  function getState() {
+    return {
+      fit: document.querySelector('.pep-fit.active').dataset.fit,
+      x: parseInt(document.getElementById('pep-x').value),
+      y: parseInt(document.getElementById('pep-y').value),
+      zoom: parseInt(document.getElementById('pep-zoom').value)
+    };
+  }
+
+  function syncPopupToImg(img) {
+    var fit = img.dataset.pepFit || 'cover';
+    var x   = parseInt(img.dataset.pepX)    || 0;
+    var y   = parseInt(img.dataset.pepY)    || 0;
+    var zoom = parseInt(img.dataset.pepZoom) || 100;
+    document.querySelectorAll('.pep-fit').forEach(function(b) {
+      b.classList.toggle('active', b.dataset.fit === fit);
+    });
+    document.getElementById('pep-x').value = x;
+    document.getElementById('pep-x-val').textContent = x + 'px';
+    document.getElementById('pep-y').value = y;
+    document.getElementById('pep-y-val').textContent = y + 'px';
+    document.getElementById('pep-zoom').value = zoom;
+    document.getElementById('pep-zoom-val').textContent = zoom + '%';
+  }
+
+  function saveStateToImg(img) {
+    var s = getState();
+    img.dataset.pepFit  = s.fit;
+    img.dataset.pepX    = s.x;
+    img.dataset.pepY    = s.y;
+    img.dataset.pepZoom = s.zoom;
+  }
+
+  function openPhotoPopup(area, e) {
+    editingArea = area;
+    var img = area.querySelector('img');
+    if (!img) return;
+    syncPopupToImg(img);
+    pepPopup.classList.add('visible');
+    var rect = area.getBoundingClientRect();
+    var top  = rect.bottom + window.scrollY + 8;
+    var left = rect.left   + window.scrollX;
+    if (left + 300 > window.innerWidth) left = window.innerWidth - 310;
+    if (top + 240 > window.innerHeight + window.scrollY) top = rect.top + window.scrollY - 250;
+    pepPopup.style.top  = top + 'px';
+    pepPopup.style.left = left + 'px';
+    if (e) { e.stopPropagation(); e.preventDefault(); }
+  }
+
+  function updateCurrentPhoto() {
+    if (!editingArea) return;
+    var img = editingArea.querySelector('img');
+    if (!img) return;
+    var s = getState();
+    saveStateToImg(img);
+    applyImgStyle(img, s);
+    // no mirror sync needed (single section)
+  }
+
+  // fit buttons
+  document.querySelectorAll('.pep-fit').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      document.querySelectorAll('.pep-fit').forEach(function(b) { b.classList.remove('active'); });
+      btn.classList.add('active');
+      updateCurrentPhoto();
+    });
+  });
+
+  // sliders
+  document.getElementById('pep-x').addEventListener('input', function() {
+    document.getElementById('pep-x-val').textContent = this.value + 'px';
+    updateCurrentPhoto();
+  });
+  document.getElementById('pep-y').addEventListener('input', function() {
+    document.getElementById('pep-y-val').textContent = this.value + 'px';
+    updateCurrentPhoto();
+  });
+  document.getElementById('pep-zoom').addEventListener('input', function() {
+    document.getElementById('pep-zoom-val').textContent = this.value + '%';
+    updateCurrentPhoto();
+  });
+
+  // close
+  document.getElementById('pep-close').addEventListener('click', function() {
+    pepPopup.classList.remove('visible'); editingArea = null;
+  });
+  document.addEventListener('mousedown', function(e) {
+    if (pepPopup.classList.contains('visible') && !pepPopup.contains(e.target) && !e.target.classList.contains('photo-edit-btn')) {
+      pepPopup.classList.remove('visible'); editingArea = null;
+    }
+  });
+
+  // 写真を変更ボタン
+  document.getElementById('pep-change').addEventListener('click', function() {
+    if (!editingArea) return;
+    pendingProduct = editingArea.dataset.product;
+    pendingSlot    = editingArea.dataset.slot || '1';
+    fileInput.value = ''; fileInput.click();
+  });
+
+  function slotSelector(product, slot) {
+    return '[data-product="' + product + '"][data-slot="' + slot + '"]';
+  }
+
+  function setPhotoForArea(area, dataUrl) {
+    var defaultState = { fit: 'contain', x: 0, y: 0, zoom: 100 };
+    var img = area.querySelector('img');
+    if (!img) { img = document.createElement('img'); area.appendChild(img); }
+    img.dataset.pepFit  = defaultState.fit;
+    img.dataset.pepX    = defaultState.x;
+    img.dataset.pepY    = defaultState.y;
+    img.dataset.pepZoom = defaultState.zoom;
+    img.onload = function() { applyImgStyle(img, defaultState); };
+    img.src = dataUrl;
+    area.classList.add('has-photo');
+    var rb = area.querySelector('.photo-remove');
+    var eb = area.querySelector('.photo-edit-btn');
+    if (rb) area.appendChild(rb);
+    if (eb) area.appendChild(eb);
+  }
+
+  // 商品・スロット個別に反映
+  function setPhotoForSlot(slot, dataUrl) {
+    // pendingProduct が設定されている場合はその商品のみ更新
+    var product = pendingProduct;
+    var sel = product
+      ? '[data-product="' + product + '"][data-slot="' + slot + '"]'
+      : '[data-slot="' + slot + '"]';
+    document.querySelectorAll(sel).forEach(function(area) {
+      setPhotoForArea(area, dataUrl);
+    });
+    if (editingArea && editingArea.dataset.slot === slot &&
+        (!product || editingArea.dataset.product === product)) {
+      syncPopupToImg(editingArea.querySelector('img'));
+    }
+  }
+
+  function clearPhotoForArea(area) {
+    var img = area.querySelector('img');
+    if (img) img.remove();
+    area.classList.remove('has-photo');
+    if (editingArea === area) { pepPopup.classList.remove('visible'); editingArea = null; }
+  }
+
+  // メインの photo-area セットアップ (slot=1)
+  document.querySelectorAll('.photo-area').forEach(function(area) {
+    var editBtn = document.createElement('button');
+    editBtn.className = 'photo-edit-btn';
+    editBtn.textContent = '⚙';
+    editBtn.addEventListener('click', function(e) { e.stopPropagation(); openPhotoPopup(area, e); });
+    area.appendChild(editBtn);
+
+    // Photo drag to move
+    (function() {
+      var dragging = false, startX, startY, startImgX, startImgY, moved;
+      area.addEventListener('mousedown', function(e) {
+        if (!area.classList.contains('has-photo')) return;
+        if (e.target.classList.contains('photo-remove') || e.target.classList.contains('photo-edit-btn')) return;
+        var img = area.querySelector('img');
+        if (!img) return;
+        dragging = true; moved = false;
+        startX = e.clientX; startY = e.clientY;
+        startImgX = parseInt(img.dataset.pepX) || 0;
+        startImgY = parseInt(img.dataset.pepY) || 0;
+        area.style.cursor = 'grabbing';
+        e.preventDefault();
+      });
+      document.addEventListener('mousemove', function(e) {
+        if (!dragging) return;
+        var dx = e.clientX - startX, dy = e.clientY - startY;
+        if (Math.abs(dx) > 2 || Math.abs(dy) > 2) moved = true;
+        var img = area.querySelector('img');
+        if (!img) return;
+        var nx = Math.min(400, Math.max(-400, startImgX + dx));
+        var ny = Math.min(400, Math.max(-400, startImgY + dy));
+        img.dataset.pepX = nx; img.dataset.pepY = ny;
+        var s = { fit: img.dataset.pepFit||'contain', x: nx, y: ny, zoom: parseInt(img.dataset.pepZoom)||100 };
+        applyImgStyle(img, s);
+        // sync sliders if popup open
+        var xEl = document.getElementById('pep-x'), yEl = document.getElementById('pep-y');
+        if (xEl) { xEl.value = nx; document.getElementById('pep-x-val').textContent = nx + 'px'; }
+        if (yEl) { yEl.value = ny; document.getElementById('pep-y-val').textContent = ny + 'px'; }
+        // no mirror sync
+      });
+      document.addEventListener('mouseup', function() {
+        if (dragging) { area.style.cursor = ''; area._moved = moved; dragging = false; }
+      });
+    })();
+
+    // click area = open file (no photo) / open popup (has photo, no drag)
+    area.addEventListener('click', function(e) {
+      if (e.target.classList.contains('photo-remove') || e.target.classList.contains('photo-edit-btn')) return;
+      if (area.classList.contains('has-photo')) {
+        if (area._moved) { area._moved = false; return; }
+        openPhotoPopup(area, e);
+      } else {
+        pendingProduct = area.dataset.product;
+        pendingSlot    = area.dataset.slot || '1';
+        fileInput.value = ''; fileInput.click();
+      }
+    });
+
+    // Scroll: zoom / move
+    area.addEventListener('wheel', function(e) {
+      if (!area.classList.contains('has-photo')) return;
+      e.preventDefault();
+      var img = area.querySelector('img');
+      if (!img) return;
+      var product = area.dataset.product;
+
+      function applyAndSync(key, val, sliderEl, valEl, suffix) {
+        img.dataset[key] = val;
+        if (sliderEl) { sliderEl.value = val; valEl.textContent = val + suffix; }
+        var s = { fit: img.dataset.pepFit||'contain', x: parseInt(img.dataset.pepX)||0, y: parseInt(img.dataset.pepY)||0, zoom: parseInt(img.dataset.pepZoom)||100 };
+        applyImgStyle(img, s);
+      }
+
+      if (e.shiftKey) {
+        // Shift + scroll = 横移動
+        var cx = parseInt(img.dataset.pepX) || 0;
+        var nx = Math.min(400, Math.max(-400, cx + (e.deltaY < 0 ? 10 : -10)));
+        applyAndSync('pepX', nx, document.getElementById('pep-x'), document.getElementById('pep-x-val'), 'px');
+      } else if (e.altKey) {
+        // Alt + scroll = 縦移動
+        var cy = parseInt(img.dataset.pepY) || 0;
+        var ny = Math.min(400, Math.max(-400, cy + (e.deltaY < 0 ? 10 : -10)));
+        applyAndSync('pepY', ny, document.getElementById('pep-y'), document.getElementById('pep-y-val'), 'px');
+      } else {
+        // そのままスクロール = ズーム
+        var cz = parseInt(img.dataset.pepZoom) || 100;
+        var nz = Math.min(400, Math.max(20, cz + (e.deltaY < 0 ? 10 : -10)));
+        applyAndSync('pepZoom', nz, document.getElementById('pep-zoom'), document.getElementById('pep-zoom-val'), '%');
+      }
+    }, { passive: false });
+
+    // Drag & drop
+    area.addEventListener('dragover', function(e) { e.preventDefault(); area.classList.add('drag-over'); });
+    area.addEventListener('dragleave', function() { area.classList.remove('drag-over'); });
+    area.addEventListener('drop', function(e) {
+      e.preventDefault(); area.classList.remove('drag-over');
+      var file = e.dataTransfer.files[0];
+      if (!file || !file.type.startsWith('image/')) return;
+      var reader = new FileReader();
+      reader.onload = (function(a) { return function(ev) {
+        pendingProduct = a.dataset.product;
+        setPhotoForSlot(a.dataset.slot || '1', ev.target.result);
+        pendingProduct = null;
+      }; })(area);
+      reader.readAsDataURL(file);
+    });
+
+    // Remove button
+    var removeBtn = area.querySelector('.photo-remove');
+    if (removeBtn) {
+      removeBtn.addEventListener('click', function(e) {
+        e.stopPropagation();
+        clearPhotoForArea(area);
+      });
+    }
+  });
+
+  // 新規サブエリアのDOM生成（DOM APIのみ使用）
+  function makeSubAreaEl(product, slot) {
+    var el = document.createElement('div');
+    el.className = 'photo-area-sub';
+    el.dataset.product = product;
+    el.dataset.slot = slot;
+    var emoji = document.createElement('div');
+    emoji.className = 'photo-emoji';
+    emoji.textContent = '\uD83D\uDCE6';
+    var caption = document.createElement('div');
+    caption.className = 'photo-caption';
+    caption.textContent = String(slot);
+    var rm = document.createElement('button');
+    rm.className = 'photo-remove';
+    rm.textContent = '\xD7';
+    el.appendChild(emoji);
+    el.appendChild(caption);
+    el.appendChild(rm);
+    return el;
+  }
+
+  // photo-area-sub セットアップ（新規追加スロットにも再利用）
+  function setupSubArea(area) {
+    if (area._subSetup) return;
+    area._subSetup = true;
+
+    var editBtn = document.createElement('button');
+    editBtn.className = 'photo-edit-btn';
+    editBtn.textContent = '\u2699';
+    editBtn.addEventListener('click', function(e) { e.stopPropagation(); openPhotoPopup(area, e); });
+    area.appendChild(editBtn);
+
+    (function() {
+      var dragging = false, startX, startY, startImgX, startImgY, moved;
+      area.addEventListener('mousedown', function(e) {
+        if (!area.classList.contains('has-photo')) return;
+        if (e.target.classList.contains('photo-remove') || e.target.classList.contains('photo-edit-btn')) return;
+        var img = area.querySelector('img');
+        if (!img) return;
+        dragging = true; moved = false;
+        startX = e.clientX; startY = e.clientY;
+        startImgX = parseInt(img.dataset.pepX) || 0;
+        startImgY = parseInt(img.dataset.pepY) || 0;
+        area.style.cursor = 'grabbing'; e.preventDefault();
+      });
+      document.addEventListener('mousemove', function(e) {
+        if (!dragging) return;
+        var dx = e.clientX - startX, dy = e.clientY - startY;
+        if (Math.abs(dx) > 2 || Math.abs(dy) > 2) moved = true;
+        var img = area.querySelector('img'); if (!img) return;
+        var nx = Math.min(400, Math.max(-400, startImgX + dx));
+        var ny = Math.min(400, Math.max(-400, startImgY + dy));
+        img.dataset.pepX = nx; img.dataset.pepY = ny;
+        applyImgStyle(img, { fit: img.dataset.pepFit||'contain', x: nx, y: ny, zoom: parseInt(img.dataset.pepZoom)||100 });
+        var xEl = document.getElementById('pep-x'), yEl = document.getElementById('pep-y');
+        if (xEl) { xEl.value = nx; document.getElementById('pep-x-val').textContent = nx + 'px'; }
+        if (yEl) { yEl.value = ny; document.getElementById('pep-y-val').textContent = ny + 'px'; }
+      });
+      document.addEventListener('mouseup', function() {
+        if (dragging) { area.style.cursor = ''; area._moved = moved; dragging = false; }
+      });
+    })();
+
+    area.addEventListener('click', function(e) {
+      if (e.target.classList.contains('photo-remove') || e.target.classList.contains('photo-edit-btn')) return;
+      if (area.classList.contains('has-photo')) {
+        if (area._moved) { area._moved = false; return; }
+        openPhotoPopup(area, e);
+      } else {
+        pendingProduct = area.dataset.product;
+        pendingSlot    = area.dataset.slot || '2';
+        fileInput.value = ''; fileInput.click();
+      }
+    });
+
+    area.addEventListener('wheel', function(e) {
+      if (!area.classList.contains('has-photo')) return;
+      e.preventDefault();
+      var img = area.querySelector('img'); if (!img) return;
+      if (e.shiftKey) {
+        var nx = Math.min(400, Math.max(-400, (parseInt(img.dataset.pepX)||0) + (e.deltaY < 0 ? 10 : -10)));
+        img.dataset.pepX = nx; applyImgStyle(img, { fit: img.dataset.pepFit||'contain', x: nx, y: parseInt(img.dataset.pepY)||0, zoom: parseInt(img.dataset.pepZoom)||100 });
+      } else if (e.altKey) {
+        var ny = Math.min(400, Math.max(-400, (parseInt(img.dataset.pepY)||0) + (e.deltaY < 0 ? 10 : -10)));
+        img.dataset.pepY = ny; applyImgStyle(img, { fit: img.dataset.pepFit||'contain', x: parseInt(img.dataset.pepX)||0, y: ny, zoom: parseInt(img.dataset.pepZoom)||100 });
+      } else {
+        var nz = Math.min(400, Math.max(20, (parseInt(img.dataset.pepZoom)||100) + (e.deltaY < 0 ? 10 : -10)));
+        img.dataset.pepZoom = nz; applyImgStyle(img, { fit: img.dataset.pepFit||'contain', x: parseInt(img.dataset.pepX)||0, y: parseInt(img.dataset.pepY)||0, zoom: nz });
+      }
+    }, { passive: false });
+
+    area.addEventListener('dragover', function(e) { e.preventDefault(); area.classList.add('drag-over'); });
+    area.addEventListener('dragleave', function() { area.classList.remove('drag-over'); });
+    area.addEventListener('drop', function(e) {
+      e.preventDefault(); area.classList.remove('drag-over');
+      var file = e.dataTransfer.files[0];
+      if (!file || !file.type.startsWith('image/')) return;
+      var reader = new FileReader();
+      reader.onload = (function(a) { return function(ev) {
+        pendingProduct = a.dataset.product;
+        setPhotoForSlot(a.dataset.slot || '1', ev.target.result);
+        pendingProduct = null;
+      }; })(area);
+      reader.readAsDataURL(file);
+    });
+
+    var removeBtn = area.querySelector('.photo-remove');
+    if (removeBtn) {
+      removeBtn.addEventListener('click', function(e) { e.stopPropagation(); clearPhotoForArea(area); });
+    }
+  }
+
+  document.querySelectorAll('.photo-area-sub').forEach(setupSubArea);
+
+  // ＋ボタンで写真スロットを動的追加
+  document.querySelectorAll('.photo-strip').forEach(function(strip) {
+    var addBtn = document.createElement('button');
+    addBtn.className = 'strip-add-btn';
+    addBtn.textContent = '\uFF0B';
+    addBtn.title = '\u5199\u771F\u30B9\u30ED\u30C3\u30C8\u3092\u8FFD\u52A0';
+    addBtn.addEventListener('click', function(e) {
+      e.stopPropagation();
+      var firstSub = strip.querySelector('.photo-area-sub');
+      var product = firstSub ? firstSub.dataset.product : 'ppsu';
+      var maxSlot = 0;
+      strip.querySelectorAll('.photo-area-sub').forEach(function(s) {
+        var n = parseInt(s.dataset.slot) || 0;
+        if (n > maxSlot) maxSlot = n;
+      });
+      var newArea = makeSubAreaEl(product, maxSlot + 1);
+      strip.insertBefore(newArea, addBtn);
+      setupSubArea(newArea);
+    });
+    strip.appendChild(addBtn);
+  });
+
+  fileInput.addEventListener('change', function() {
+    var file = fileInput.files[0];
+    if (!file || !pendingProduct) return;
+    var reader = new FileReader();
+    reader.onload = function(ev) {
+      setPhotoForSlot(pendingSlot, ev.target.result);
+      pendingProduct = null;
+    };
+    reader.readAsDataURL(file);
+  });
+
+  // 他スクリプトから使えるよう公開
+  window._thumb = {
+    applyImgStyle:  applyImgStyle,
+    setPhotoForArea: setPhotoForArea,
+    setupSubArea:   setupSubArea,
+    makeSubAreaEl:  makeSubAreaEl,
+  };
+})();
+</script>
+
+<script>
+// ===== 商品名テキスト サイズ変更 =====
+(function() {
+  var bar      = document.getElementById('title-size-bar');
+  var sizeVal  = document.getElementById('title-size-val');
+  var activeEl = null;
+  var hideTimer = null;
+
+  function getSize(el) {
+    return parseInt(el.style.fontSize) || 13;
+  }
+  function setSize(el, sz) {
+    sz = Math.min(60, Math.max(8, sz));
+    el.style.fontSize = sz + 'px';
+    sizeVal.textContent = sz + 'px';
+  }
+  function showBar(el) {
+    clearTimeout(hideTimer);
+    activeEl = el;
+    var rect = el.getBoundingClientRect();
+    bar.style.left = rect.left + 'px';
+    bar.style.top  = (rect.top - 38) + 'px';
+    bar.classList.add('visible');
+    sizeVal.textContent = getSize(el) + 'px';
+  }
+  function scheduleHide() {
+    hideTimer = setTimeout(function() {
+      bar.classList.remove('visible');
+      activeEl = null;
+    }, 200);
+  }
+
+  document.querySelectorAll('.thumb-title').forEach(function(el) {
+    el.addEventListener('focus', function() { showBar(el); });
+    el.addEventListener('blur',  function() { scheduleHide(); });
+  });
+
+  bar.addEventListener('mouseenter', function() { clearTimeout(hideTimer); });
+  bar.addEventListener('mouseleave', function() { scheduleHide(); });
+
+  document.getElementById('title-sz-down').addEventListener('mousedown', function(e) {
+    e.preventDefault();
+    if (activeEl) setSize(activeEl, getSize(activeEl) - 1);
+  });
+  document.getElementById('title-sz-up').addEventListener('mousedown', function(e) {
+    e.preventDefault();
+    if (activeEl) setSize(activeEl, getSize(activeEl) + 1);
+  });
+
+  var colorPick = document.getElementById('title-color-pick');
+  colorPick.addEventListener('input', function() {
+    if (activeEl) activeEl.style.color = colorPick.value;
+  });
+  // フォーカス時に現在色をピッカーに反映
+  document.querySelectorAll('.thumb-title').forEach(function(el) {
+    el.addEventListener('focus', function() {
+      var c = el.style.color;
+      if (c) {
+        // rgb() → hex 変換
+        var m = c.match(/\d+/g);
+        if (m && m.length >= 3) {
+          colorPick.value = '#' + [m[0],m[1],m[2]].map(function(v) {
+            return ('0' + parseInt(v).toString(16)).slice(-2);
+          }).join('');
+        }
+      } else {
+        colorPick.value = '#ffffff';
+      }
+    });
+  });
+})();
+</script>
+
+<script>
+// ===== LOGO IMAGE + SIZE/POSITION =====
+(function() {
+  var fileInput = document.createElement('input');
+  fileInput.type = 'file'; fileInput.accept = 'image/*';
+  fileInput.style.display = 'none';
+  document.body.appendChild(fileInput);
+
+  var logoDataUrl = null;
+  var logoSize = 56; // px (diameter)
+
+  function applyLogoToAll() {
+    document.querySelectorAll('.logo-circle').forEach(function(circle) {
+      if (logoDataUrl) {
+        circle.textContent = '';
+        var img = circle.querySelector('img') || document.createElement('img');
+        img.src = logoDataUrl;
+        circle.appendChild(img);
+      }
+      circle.style.width  = logoSize + 'px';
+      circle.style.height = logoSize + 'px';
+    });
+  }
+
+  // ドラッグ移動
+  function makeDraggableLogo(logo) {
+    var dragging = false, sx, sy, sleft, stop;
+    logo.addEventListener('mousedown', function(e) {
+      if (e.button !== 0) return;
+      dragging = true;
+      sx = e.clientX; sy = e.clientY;
+      var computed = window.getComputedStyle(logo);
+      sleft = parseInt(logo.style.left) || parseInt(computed.left) || 12;
+      stop  = parseInt(logo.style.top)  || parseInt(computed.top)  || 14;
+      logo.style.left = sleft + 'px'; logo.style.top = stop + 'px';
+      logo.style.position = 'absolute';
+      e.preventDefault();
+    });
+    document.addEventListener('mousemove', function(e) {
+      if (!dragging) return;
+      logo.style.left = (sleft + e.clientX - sx) + 'px';
+      logo.style.top  = (stop  + e.clientY - sy) + 'px';
+    });
+    document.addEventListener('mouseup', function() { dragging = false; });
+
+    // スクロールでサイズ変更
+    logo.addEventListener('wheel', function(e) {
+      e.preventDefault();
+      logoSize = Math.min(160, Math.max(24, logoSize + (e.deltaY < 0 ? 4 : -4)));
+      applyLogoToAll();
+    }, { passive: false });
+
+    // クリックでファイル選択
+    logo.addEventListener('click', function(e) {
+      if (Math.abs(e.clientX - (sx||0)) > 4 || Math.abs(e.clientY - (sy||0)) > 4) return;
+      fileInput.value = ''; fileInput.click();
+    });
+  }
+
+  document.querySelectorAll('.logo').forEach(makeDraggableLogo);
+
+  fileInput.addEventListener('change', function() {
+    var file = fileInput.files[0];
+    if (!file) return;
+    var reader = new FileReader();
+    reader.onload = function(ev) {
+      logoDataUrl = ev.target.result;
+      applyLogoToAll();
+    };
+    reader.readAsDataURL(file);
+  });
+})();
+</script>
+
+<script>
+// ===== 保存 / 読み込み =====
+(function() {
+
+  // ---- PNG書き出し ----
+  function getThumbByProduct(product) {
+    var el = document.querySelector('[data-product="' + product + '"]');
+    return el ? el.closest('.thumb') : null;
+  }
+
+  function exportPng(product) {
+    if (typeof html2canvas === 'undefined') {
+      alert('html2canvasが読み込まれていません。インターネット接続を確認してください。');
+      return;
+    }
+    var productNames = { ppsu: 'PPSU', stainless: 'Stainless', onetouch: 'OneTouch' };
+    var targets = product === 'all'
+      ? ['ppsu', 'stainless', 'onetouch']
+      : [product];
+
+    targets.forEach(function(p, i) {
+      var thumb = getThumbByProduct(p);
+      if (!thumb) return;
+      setTimeout(function() {
+        html2canvas(thumb, {
+          scale: 2,
+          useCORS: true,
+          allowTaint: true,
+          backgroundColor: null,
+          logging: false,
+        }).then(function(canvas) {
+          var link = document.createElement('a');
+          link.download = 'GROSMIMI_' + productNames[p] + '_thumbnail.png';
+          link.href = canvas.toDataURL('image/png');
+          link.click();
+        });
+      }, i * 600);
+    });
+  }
+
+  // ---- 状態のシリアライズ ----
+  function serializeState() {
+    var layoutMatch = document.body.className.match(/mode-(\S+)/);
+    var stripEl = document.querySelector('.photo-strip');
+    var state = {
+      version: 2,
+      layout: layoutMatch ? layoutMatch[1] : 'solid',
+      stripHeight: stripEl ? (parseFloat(stripEl.style.height) || 22) : 22,
+      products: {},
+    };
+
+    var idMap = {
+      ppsu:      { anchor: 'ppsu-bg-anchor', right: 'ppsu-bg-right', logo: 'ppsu-logo' },
+      stainless: { anchor: 'sl-bg-anchor',   right: 'sl-bg-right',   logo: 'sl-logo'   },
+      onetouch:  { anchor: 'ot-bg-anchor',   right: 'ot-bg-right',   logo: 'ot-logo'   },
+    };
+
+    ['ppsu', 'stainless', 'onetouch'].forEach(function(product) {
+      var m = idMap[product];
+      var titleEl = document.querySelector('.thumb-title[data-product="' + product + '"]');
+      var anchorEl = document.getElementById(m.anchor);
+      var rightEl  = document.getElementById(m.right);
+      var logoEl   = document.getElementById(m.logo);
+
+      var p = {
+        anchorColor: anchorEl ? anchorEl.style.background : '',
+        rightColor:  rightEl  ? rightEl.style.background  : '',
+        logoColor:   logoEl   ? logoEl.style.color        : '',
+        title: titleEl ? {
+          text:     titleEl.textContent,
+          fontSize: titleEl.style.fontSize || '13px',
+          color:    titleEl.style.color    || '#ffffff',
+        } : {},
+        photos:  {},
+        badges:  [],
+      };
+
+      // Photos
+      document.querySelectorAll('[data-product="' + product + '"].has-photo').forEach(function(area) {
+        var img = area.querySelector('img');
+        if (!img || !img.src) return;
+        p.photos[area.dataset.slot || '1'] = {
+          src:  img.src,
+          fit:  img.dataset.pepFit  || 'contain',
+          x:    img.dataset.pepX    || '0',
+          y:    img.dataset.pepY    || '0',
+          zoom: img.dataset.pepZoom || '100',
+        };
+      });
+
+      // Badges
+      var thumb = getThumbByProduct(product);
+      if (thumb) {
+        thumb.querySelectorAll('.badge').forEach(function(badge) {
+          p.badges.push({
+            text:         badge.textContent.trim(),
+            background:   badge.style.background || '',
+            color:        badge.style.color       || '',
+            fontSize:     badge.style.fontSize    || '',
+            borderRadius: badge.style.borderRadius|| '',
+            padding:      badge.style.padding     || '',
+            width:        badge.style.width       || '',
+            height:       badge.style.height      || '',
+            position:     badge.style.position    || '',
+            left:         badge.style.left        || '',
+            top:          badge.style.top         || '',
+          });
+        });
+      }
+
+      state.products[product] = p;
+    });
+
+    return state;
+  }
+
+  // ---- 状態の復元 ----
+  function restoreState(state) {
+    if (!state || !state.version) { alert('互換性のないファイルです'); return; }
+
+    if (state.layout && window.switchLayout) window.switchLayout(state.layout);
+
+    if (state.stripHeight) {
+      document.querySelectorAll('.photo-strip').forEach(function(s) {
+        s.style.height = state.stripHeight + '%';
+      });
+    }
+
+    var idMap = {
+      ppsu:      { anchor: 'ppsu-bg-anchor', right: 'ppsu-bg-right', logo: 'ppsu-logo' },
+      stainless: { anchor: 'sl-bg-anchor',   right: 'sl-bg-right',   logo: 'sl-logo'   },
+      onetouch:  { anchor: 'ot-bg-anchor',   right: 'ot-bg-right',   logo: 'ot-logo'   },
+    };
+
+    ['ppsu', 'stainless', 'onetouch'].forEach(function(product) {
+      var p = state.products && state.products[product];
+      if (!p) return;
+      var m = idMap[product];
+
+      if (p.anchorColor) document.getElementById(m.anchor).style.background = p.anchorColor;
+      if (p.rightColor)  document.getElementById(m.right).style.background  = p.rightColor;
+      if (p.logoColor)   document.getElementById(m.logo).style.color        = p.logoColor;
+
+      var titleEl = document.querySelector('.thumb-title[data-product="' + product + '"]');
+      if (titleEl && p.title) {
+        if (p.title.text     !== undefined) titleEl.textContent    = p.title.text;
+        if (p.title.fontSize) titleEl.style.fontSize  = p.title.fontSize;
+        if (p.title.color)    titleEl.style.color     = p.title.color;
+      }
+
+      // Photos
+      if (p.photos && window._thumb) {
+        Object.keys(p.photos).forEach(function(slot) {
+          var photoData = p.photos[slot];
+          if (!photoData.src) return;
+          var area = document.querySelector('[data-product="' + product + '"][data-slot="' + slot + '"]');
+          if (!area) {
+            // スロットが存在しない場合は作成
+            var strip = document.querySelector('.thumb-title[data-product="' + product + '"]')
+              ? document.querySelector('[data-product="' + product + '"].photo-area') &&
+                document.querySelector('[data-product="' + product + '"].photo-area').closest('.thumb')
+                  .querySelector('.photo-strip')
+              : null;
+            if (strip && window._thumb.makeSubAreaEl && window._thumb.setupSubArea) {
+              area = window._thumb.makeSubAreaEl(product, slot);
+              var addBtn = strip.querySelector('.strip-add-btn');
+              if (addBtn) strip.insertBefore(area, addBtn);
+              else strip.appendChild(area);
+              window._thumb.setupSubArea(area);
+            }
+          }
+          if (!area) return;
+          var img = area.querySelector('img') || document.createElement('img');
+          img.dataset.pepFit  = photoData.fit;
+          img.dataset.pepX    = photoData.x;
+          img.dataset.pepY    = photoData.y;
+          img.dataset.pepZoom = photoData.zoom;
+          img.onload = (function(im, pd) {
+            return function() {
+              if (window._thumb && window._thumb.applyImgStyle) {
+                window._thumb.applyImgStyle(im, {
+                  fit:  pd.fit,
+                  x:    parseInt(pd.x),
+                  y:    parseInt(pd.y),
+                  zoom: parseInt(pd.zoom),
+                });
+              }
+            };
+          })(img, photoData);
+          if (!area.querySelector('img')) area.appendChild(img);
+          img.src = photoData.src;
+          area.classList.add('has-photo');
+        });
+      }
+
+      // Badges — テキストと色を復元
+      if (p.badges && p.badges.length) {
+        var thumb = getThumbByProduct(product);
+        if (thumb) {
+          var domBadges = Array.from(thumb.querySelectorAll('.badge'));
+          p.badges.forEach(function(bd, i) {
+            var el = domBadges[i];
+            if (!el) return;
+            el.textContent = bd.text;
+            if (bd.background)   el.style.background   = bd.background;
+            if (bd.fontSize)     el.style.fontSize     = bd.fontSize;
+            if (bd.borderRadius) el.style.borderRadius = bd.borderRadius;
+            if (bd.padding)      el.style.padding      = bd.padding;
+            if (bd.width)        el.style.width        = bd.width;
+            if (bd.height)       el.style.height       = bd.height;
+            if (bd.position === 'absolute' && bd.left && bd.top) {
+              el.style.position = 'absolute';
+              el.style.left     = bd.left;
+              el.style.top      = bd.top;
+              el.style.margin   = '0';
+              el.style.zIndex   = '30';
+              if (!el.closest('.thumb')) thumb.appendChild(el);
+            }
+          });
+        }
+      }
+    });
+  }
+
+  // ---- ボタンイベント ----
+
+  // PNG書き出し
+  document.querySelectorAll('.save-png-btn').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      exportPng(btn.dataset.product);
+    });
+  });
+
+  // 状態保存（JSONファイル）
+  document.getElementById('state-save-btn').addEventListener('click', function() {
+    var state = serializeState();
+    var json  = JSON.stringify(state);
+    var blob  = new Blob([json], { type: 'application/json' });
+    var url   = URL.createObjectURL(blob);
+    var link  = document.createElement('a');
+    link.download = 'GROSMIMI_thumbnail_state.json';
+    link.href = url;
+    link.click();
+    URL.revokeObjectURL(url);
+    var st = document.getElementById('state-status');
+    st.textContent = '保存しました';
+    setTimeout(function() { st.textContent = ''; }, 2500);
+  });
+
+  // 状態読み込み
+  document.getElementById('state-load-btn').addEventListener('click', function() {
+    document.getElementById('state-file-input').click();
+  });
+  document.getElementById('state-file-input').addEventListener('change', function() {
+    var file = this.files[0];
+    if (!file) return;
+    var reader = new FileReader();
+    reader.onload = function(ev) {
+      try {
+        restoreState(JSON.parse(ev.target.result));
+        var st = document.getElementById('state-status');
+        st.textContent = '読み込みました';
+        setTimeout(function() { st.textContent = ''; }, 2500);
+      } catch(e) {
+        alert('ファイルの読み込みに失敗しました');
+      }
+    };
+    reader.readAsText(file);
+    this.value = '';
+  });
+
+  // ページを閉じるとき写真なしの状態をlocalStorageに自動保存
+  window.addEventListener('beforeunload', function() {
+    try {
+      var state = serializeState();
+      ['ppsu','stainless','onetouch'].forEach(function(p) {
+        if (state.products[p]) state.products[p].photos = {};
+      });
+      localStorage.setItem('grosmimi_thumb_v2', JSON.stringify(state));
+    } catch(e) {}
+  });
+
+  // ページを開いたとき自動復元（写真なし版）
+  var auto = localStorage.getItem('grosmimi_thumb_v2');
+  if (auto) {
+    try { restoreState(JSON.parse(auto)); } catch(e) {}
+  }
+
+})();
+</script>
+</body>
+</html>

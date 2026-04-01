@@ -419,7 +419,7 @@ def run_slot(slot: int, dry_run: bool = False) -> dict:
             try:
                 response = client.create_tweet(text=tweet_jp)
                 tweet_id = response.data["id"]
-                tweet_url = f"https://x.com/grosmimi_japan/status/{tweet_id}"
+                tweet_url = f"https://x.com/grosmimi_jp/status/{tweet_id}"
                 logger.info(f"Posted: {tweet_url}")
                 result["actions"].append({"type": "tweet", "url": tweet_url})
             except Exception as e:

@@ -36,20 +36,29 @@ class RakutenRMSClient:
         return path if path.startswith("http") else f"{self.base}{path}"
 
     def search_order_numbers(self, days: int = 30, order_progress: List[int] = None) -> List[str]:
-        """Call searchOrder and return list of order numbers."""
+        """Call searchOrder in 7-day chunks to get all order numbers (API returns max 30 per call)."""
         now = datetime.now(JST)
-        start = now - timedelta(days=days)
-        body: Dict[str, Any] = {
-            "dateType": 1,
-            "startDatetime": start.strftime("%Y-%m-%dT%H:%M:%S+0900"),
-            "endDatetime": now.strftime("%Y-%m-%dT%H:%M:%S+0900"),
-        }
-        if order_progress:
-            body["orderProgressList"] = order_progress
-        resp = self.session.post(self._url("/es/2.0/order/searchOrder"), json=body)
-        resp.raise_for_status()
-        data = resp.json()
-        return data.get("orderNumberList") or []
+        all_numbers: List[str] = []
+        seen: set = set()
+        chunk_days = 7
+        for offset in range(0, days, chunk_days):
+            chunk_end = now - timedelta(days=offset)
+            chunk_start = now - timedelta(days=min(offset + chunk_days, days))
+            body: Dict[str, Any] = {
+                "dateType": 1,
+                "startDatetime": chunk_start.strftime("%Y-%m-%dT%H:%M:%S+0900"),
+                "endDatetime": chunk_end.strftime("%Y-%m-%dT%H:%M:%S+0900"),
+            }
+            if order_progress:
+                body["orderProgressList"] = order_progress
+            resp = self.session.post(self._url("/es/2.0/order/searchOrder"), json=body)
+            resp.raise_for_status()
+            data = resp.json()
+            for num in (data.get("orderNumberList") or []):
+                if num not in seen:
+                    seen.add(num)
+                    all_numbers.append(num)
+        return all_numbers
 
     def get_orders(self, order_numbers: List[str]) -> List[Dict[str, Any]]:
         """Call getOrder for a batch of order numbers (max 100 per request)."""

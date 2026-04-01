@@ -590,7 +590,7 @@ def run_engagement(
 
             # Notify supervisor via Teams
             if result["status"] == "published" and result.get("reply_id"):
-                reply_url = f"https://x.com/grosmimi_japan/status/{result['reply_id']}"
+                reply_url = f"https://x.com/grosmimi_jp/status/{result['reply_id']}"
                 notify_supervisor(tweet, reply_text, reply_url)
 
             # Log
@@ -618,7 +618,7 @@ def run_engagement(
             print(f"  Status: {result['status']}")
 
             if result.get("reply_id"):
-                print(f"  Reply URL: https://x.com/grosmimi_japan/status/{result['reply_id']}")
+                print(f"  Reply URL: https://x.com/grosmimi_jp/status/{result['reply_id']}")
 
         else:
             print(f"  Failed: {result.get('error', 'unknown')}")

@@ -143,7 +143,7 @@ def create_daily_excel(
 
     period = label.upper() if label else "ALL"
     ws1.merge_cells("A1:H1")
-    ws1["A1"] = f"@grosmimi_japan 트윗 플랜 — {date_str} ({period})"
+    ws1["A1"] = f"@grosmimi_jp 트윗 플랜 — {date_str} ({period})"
     ws1["A1"].font = Font(bold=True, size=14, name="맑은 고딕")
     ws1["A1"].alignment = Alignment(horizontal="center")
 
@@ -220,7 +220,7 @@ def create_daily_excel(
         ws2 = wb.create_sheet("리플 계획")
 
         ws2.merge_cells("A1:H1")
-        ws2["A1"] = f"@grosmimi_japan 리플 계획 — {date_str} ({period})"
+        ws2["A1"] = f"@grosmimi_jp 리플 계획 — {date_str} ({period})"
         ws2["A1"].font = Font(bold=True, size=14, name="맑은 고딕")
         ws2["A1"].alignment = Alignment(horizontal="center")
 
@@ -367,7 +367,7 @@ def create_weekly_excel(
 
         period = sheet_name
         ws1.merge_cells("A1:H1")
-        ws1["A1"] = f"@grosmimi_japan ツイートプラン — {date_str} ({period})"
+        ws1["A1"] = f"@grosmimi_jp ツイートプラン — {date_str} ({period})"
         ws1["A1"].font = Font(bold=True, size=14, name="맑은 고딕")
         ws1["A1"].alignment = Alignment(horizontal="center")
 
@@ -445,7 +445,7 @@ def create_weekly_excel(
             ws2 = wb.create_sheet(reply_sheet_name)
 
             ws2.merge_cells("A1:H1")
-            ws2["A1"] = f"@grosmimi_japan リプ計画 — {date_str} ({period})"
+            ws2["A1"] = f"@grosmimi_jp リプ計画 — {date_str} ({period})"
             ws2["A1"].font = Font(bold=True, size=14, name="맑은 고딕")
             ws2["A1"].alignment = Alignment(horizontal="center")
 
