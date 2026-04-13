@@ -1,0 +1,533 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>インフルエンサー有償判定</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,300;0,400;0,500;1,300&family=Syne:wght@700;800&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:        #080809;
+  --surface:   #0e0e10;
+  --surface2:  #131316;
+  --border:    #1c1c21;
+  --border2:   #242429;
+  --text:      #dddde8;
+  --muted:     #44445a;
+  --faint:     #111115;
+
+  --pass:      #39e9a0;
+  --pass-dim:  rgba(57,233,160,0.10);
+  --fail:      #ff4466;
+  --fail-dim:  rgba(255,68,102,0.10);
+  --warn:      #f5a623;
+  --warn-dim:  rgba(245,166,35,0.10);
+  --accent:    #39e9a0;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'DM Mono', monospace;
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  padding: 52px 20px 100px;
+}
+
+/* Grain overlay */
+body::before {
+  content: '';
+  position: fixed; inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23n)' opacity='0.025'/%3E%3C/svg%3E");
+  pointer-events: none; z-index: 999;
+}
+
+.wrapper { width: 100%; max-width: 660px; position: relative; }
+
+/* ── Header ─────────────────────────────── */
+.header { margin-bottom: 40px; }
+
+.eyebrow {
+  font-size: 9px; letter-spacing: 0.28em; text-transform: uppercase;
+  color: var(--muted); margin-bottom: 16px;
+  display: flex; align-items: center; gap: 12px;
+}
+.eyebrow::after {
+  content: ''; flex: 1; height: 1px;
+  background: linear-gradient(to right, var(--border2), transparent);
+}
+
+.title {
+  font-family: 'Syne', sans-serif;
+  font-size: 44px; font-weight: 800; line-height: 1;
+  letter-spacing: -0.03em; color: var(--text);
+}
+.title .accent { color: var(--accent); }
+
+.header-meta {
+  margin-top: 16px; display: flex; align-items: center; gap: 10px;
+}
+
+.pill {
+  font-size: 9px; letter-spacing: 0.12em; text-transform: uppercase;
+  color: var(--muted); border: 1px solid var(--border2);
+  border-radius: 100px; padding: 4px 11px;
+}
+
+/* ── Card ──────────────────────────────── */
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  overflow: hidden;
+}
+
+/* ── Follower strip ── */
+.fw-strip {
+  display: flex; align-items: stretch;
+  border-bottom: 1px solid var(--border);
+}
+
+.fw-lbl {
+  padding: 14px 20px;
+  font-size: 8px; letter-spacing: 0.22em; text-transform: uppercase; color: var(--muted);
+  display: flex; align-items: center;
+  border-right: 1px solid var(--border);
+  white-space: nowrap; min-width: 120px;
+}
+
+.fw-inp { flex: 1; padding: 10px 20px; display: flex; align-items: center; }
+.fw-inp input {
+  width: 100%; background: transparent; border: none; outline: none;
+  font-family: 'Syne', sans-serif; font-size: 30px; font-weight: 700;
+  letter-spacing: -0.02em; color: var(--text);
+  -moz-appearance: textfield; caret-color: var(--accent);
+}
+.fw-inp input::placeholder { color: var(--border2); }
+.fw-inp input::-webkit-outer-spin-button,
+.fw-inp input::-webkit-inner-spin-button { display: none; }
+
+/* ── Tabs ── */
+.tabs { display: flex; border-bottom: 1px solid var(--border); }
+
+.tab {
+  flex: 1; padding: 11px 14px; text-align: center;
+  font-size: 9px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--muted);
+  cursor: pointer; position: relative;
+  transition: color 0.2s; user-select: none;
+}
+.tab:not(:last-child) { border-right: 1px solid var(--border); }
+.tab::after {
+  content: ''; position: absolute; bottom: -1px; left: 0; right: 0; height: 1px;
+  background: var(--accent); transform: scaleX(0);
+  transition: transform 0.25s cubic-bezier(0.4,0,0.2,1);
+}
+.tab.active { color: var(--text); }
+.tab.active::after { transform: scaleX(1); }
+.tab:hover:not(.active) { color: #888; }
+
+/* ── Data Table ── */
+.tbl-section { padding: 18px 20px 14px; }
+
+.tbl-head {
+  display: grid; grid-template-columns: 36px 1fr 1fr 1fr;
+  border-bottom: 1px solid var(--border); padding-bottom: 8px; margin-bottom: 2px;
+}
+.tbl-head span {
+  font-size: 8px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--muted);
+  padding: 0 8px; text-align: right;
+}
+.tbl-head span:first-child { text-align: left; padding-left: 0; }
+
+.tbl-body { display: flex; flex-direction: column; }
+
+.tbl-row {
+  display: grid; grid-template-columns: 36px 1fr 1fr 1fr;
+  border-bottom: 1px solid rgba(255,255,255,0.025);
+}
+.tbl-row:last-child { border-bottom: none; }
+
+.rn {
+  font-size: 9px; color: var(--muted); display: flex; align-items: center;
+  padding: 9px 0; opacity: 0.5;
+}
+
+.ci {
+  border-left: 1px solid rgba(255,255,255,0.025); padding: 5px 8px;
+  transition: background 0.15s;
+}
+.ci input {
+  width: 100%; background: transparent; border: none; outline: none;
+  font-family: 'DM Mono', monospace; font-size: 18px; font-weight: 400;
+  color: var(--text); text-align: right;
+  -moz-appearance: textfield; caret-color: var(--accent);
+}
+.ci input::placeholder { color: #1e1e26; }
+.ci input::-webkit-outer-spin-button,
+.ci input::-webkit-inner-spin-button { display: none; }
+
+/* AVG row */
+.avg-row {
+  display: grid; grid-template-columns: 36px 1fr 1fr 1fr;
+  margin-top: 10px; padding-top: 12px;
+  border-top: 1px solid var(--border);
+}
+
+.avg-lbl {
+  font-size: 8px; letter-spacing: 0.2em; text-transform: uppercase;
+  color: var(--accent); display: flex; align-items: center; padding-right: 8px;
+}
+
+.avg-v {
+  border-left: 1px solid var(--border); padding: 6px 8px;
+  text-align: right;
+  font-family: 'Syne', sans-serif; font-size: 20px; font-weight: 700;
+  color: var(--accent); letter-spacing: -0.01em; line-height: 1.2;
+}
+.avg-v.empty { color: var(--muted); font-family: 'DM Mono', monospace; font-size: 14px; font-weight: 300; }
+
+/* ── Result section ── */
+.result-section { border-top: 1px solid var(--border); }
+
+/* Status bar */
+.status-bar {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 18px 22px 16px;
+  border-bottom: 1px solid var(--border);
+}
+
+.status-left { display: flex; align-items: center; gap: 12px; }
+
+.status-chip {
+  display: flex; align-items: center; gap: 8px;
+  padding: 6px 14px; border-radius: 100px;
+  border: 1px solid var(--border2);
+  transition: border-color 0.3s, background 0.3s;
+}
+.status-chip.ok   { border-color: rgba(57,233,160,0.3); background: rgba(57,233,160,0.05); }
+.status-chip.ng   { border-color: rgba(255,68,102,0.3); background: rgba(255,68,102,0.05); }
+.status-chip.warn { border-color: rgba(245,166,35,0.3); background: rgba(245,166,35,0.05); }
+
+.chip-dot {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: var(--muted); flex-shrink: 0;
+  transition: background 0.3s, box-shadow 0.3s;
+}
+.status-chip.ok   .chip-dot { background: var(--pass); box-shadow: 0 0 8px var(--pass); animation: pulse 2s ease-in-out infinite; }
+.status-chip.ng   .chip-dot { background: var(--fail); }
+.status-chip.warn .chip-dot { background: var(--warn); }
+
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
+
+.chip-label {
+  font-size: 11px; letter-spacing: 0.06em; color: var(--muted);
+  transition: color 0.3s;
+}
+.status-chip.ok   .chip-label { color: var(--pass); }
+.status-chip.ng   .chip-label { color: var(--fail); }
+.status-chip.warn .chip-label { color: var(--warn); }
+
+/* Fee */
+.fee-block {
+  text-align: right; opacity: 0; transform: translateX(6px);
+  transition: opacity 0.4s, transform 0.4s; pointer-events: none;
+}
+.fee-block.show { opacity: 1; transform: translateX(0); pointer-events: auto; }
+.fee-lbl { font-size: 8px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--muted); margin-bottom: 3px; }
+.fee-num {
+  font-family: 'Syne', sans-serif; font-size: 26px; font-weight: 800;
+  color: var(--pass); letter-spacing: -0.02em; line-height: 1;
+}
+
+/* Metrics */
+.metrics { padding: 18px 22px 14px; display: flex; flex-direction: column; gap: 14px; }
+
+.metric {}
+.metric-head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 6px; }
+.m-name { font-size: 8px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--muted); }
+.m-vals { font-size: 11px; }
+.m-cur { color: var(--text); font-weight: 500; transition: color 0.25s; }
+.m-cur.pass { color: var(--pass); }
+.m-cur.fail { color: var(--fail); }
+.m-div { margin: 0 6px; color: var(--border2); }
+.m-tgt { color: var(--muted); font-size: 10px; }
+
+.track { height: 2px; background: var(--faint); border-radius: 1px; overflow: hidden; position: relative; }
+.fill {
+  height: 100%; width: 0%; border-radius: 1px;
+  transition: width 0.6s cubic-bezier(0.4,0,0.2,1), background 0.3s;
+  background: var(--muted);
+}
+.fill.pass { background: var(--pass); }
+.fill.fail { background: var(--fail); }
+
+/* Note */
+.note-bar {
+  padding: 0 22px 16px; font-size: 9px; letter-spacing: 0.04em; line-height: 1.8;
+  color: transparent; transition: color 0.3s; min-height: 30px;
+}
+.note-bar.show { color: var(--muted); }
+
+@media (max-width: 500px) {
+  .title { font-size: 34px; }
+  .tbl-head, .tbl-row, .avg-row { grid-template-columns: 28px 1fr 1fr 1fr; }
+  .ci input { font-size: 15px; }
+  .avg-v { font-size: 17px; }
+  .fw-inp input { font-size: 24px; }
+}
+</style>
+</head>
+<body>
+<div class="wrapper">
+
+  <div class="header">
+    <p class="eyebrow">Influencer Screening</p>
+    <h1 class="title">有償<span class="accent">判定</span></h1>
+    <div class="header-meta">
+      <span class="pill">5,000 – 20,000 followers</span>
+      <span class="pill">Reels</span>
+    </div>
+  </div>
+
+  <div class="card">
+
+    <!-- Follower -->
+    <div class="fw-strip">
+      <div class="fw-lbl">フォロワー数</div>
+      <div class="fw-inp">
+        <input type="number" id="i-fw" placeholder="12,000" min="0">
+      </div>
+    </div>
+
+    <!-- Tabs -->
+    <div class="tabs">
+      <div class="tab active" data-col="v">再生数</div>
+      <div class="tab" data-col="l">いいね数</div>
+      <div class="tab" data-col="c">コメント数</div>
+    </div>
+
+    <!-- Table -->
+    <div class="tbl-section">
+      <div class="tbl-head">
+        <span>#</span>
+        <span>再生数</span>
+        <span>いいね</span>
+        <span>コメント</span>
+      </div>
+      <div class="tbl-body" id="tbl-body"></div>
+      <div class="avg-row">
+        <div class="avg-lbl">AVG</div>
+        <div class="avg-v empty" id="av-v">—</div>
+        <div class="avg-v empty" id="av-l">—</div>
+        <div class="avg-v empty" id="av-c">—</div>
+      </div>
+    </div>
+
+    <!-- Result -->
+    <div class="result-section">
+
+      <div class="status-bar">
+        <div class="status-left">
+          <div class="status-chip" id="sChip">
+            <div class="chip-dot"></div>
+            <span class="chip-label" id="sLabel">入力待ち</span>
+          </div>
+        </div>
+        <div class="fee-block" id="feeBlock">
+          <div class="fee-lbl">報酬目安</div>
+          <div class="fee-num" id="feeNum">¥0</div>
+        </div>
+      </div>
+
+      <div class="metrics">
+        <div class="metric">
+          <div class="metric-head">
+            <span class="m-name">再生数 avg</span>
+            <span class="m-vals"><span class="m-cur" id="mc-v">—</span><span class="m-div">/</span><span class="m-tgt" id="mt-v">fw × 2</span></span>
+          </div>
+          <div class="track"><div class="fill" id="fill-v"></div></div>
+        </div>
+        <div class="metric">
+          <div class="metric-head">
+            <span class="m-name">いいね avg</span>
+            <span class="m-vals"><span class="m-cur" id="mc-l">—</span><span class="m-div">/</span><span class="m-tgt" id="mt-l">fw × 0.5%</span></span>
+          </div>
+          <div class="track"><div class="fill" id="fill-l"></div></div>
+        </div>
+        <div class="metric">
+          <div class="metric-head">
+            <span class="m-name">コメント avg</span>
+            <span class="m-vals"><span class="m-cur" id="mc-c">—</span><span class="m-div">/</span><span class="m-tgt" id="mt-c">fw × 0.2%</span></span>
+          </div>
+          <div class="track"><div class="fill" id="fill-c"></div></div>
+        </div>
+      </div>
+
+      <div class="note-bar" id="noteBar"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+  var NUM = 10;
+  var rows = [];
+
+  function fmt(n) { return Number(Math.round(n)).toLocaleString('ja-JP'); }
+  function g(id) { return document.getElementById(id); }
+
+  // Build rows
+  var body = g('tbl-body');
+  for (var i = 0; i < NUM; i++) {
+    var row = document.createElement('div');
+    row.className = 'tbl-row';
+
+    var rn = document.createElement('div');
+    rn.className = 'rn';
+    rn.textContent = (i + 1);
+    row.appendChild(rn);
+
+    var obj = {};
+    ['v','l','c'].forEach(function(k) {
+      var cell = document.createElement('div');
+      cell.className = 'ci';
+      var inp = document.createElement('input');
+      inp.type = 'number'; inp.min = '0'; inp.placeholder = '—';
+      inp.addEventListener('input', recalc);
+      cell.appendChild(inp);
+      row.appendChild(cell);
+      obj[k] = inp;
+      obj[k + 'cell'] = cell;
+    });
+
+    body.appendChild(row);
+    rows.push(obj);
+  }
+
+  // Tab highlight
+  var activeCol = 'v';
+  document.querySelectorAll('.tab').forEach(function(tab) {
+    tab.addEventListener('click', function() {
+      document.querySelectorAll('.tab').forEach(function(t) { t.classList.remove('active'); });
+      tab.classList.add('active');
+      activeCol = tab.dataset.col;
+      highlightCol();
+    });
+  });
+
+  function highlightCol() {
+    rows.forEach(function(r) {
+      ['v','l','c'].forEach(function(k) {
+        r[k + 'cell'].style.background = k === activeCol ? 'rgba(57,233,160,0.04)' : '';
+      });
+    });
+  }
+  highlightCol();
+
+  function avg(key) {
+    var vals = rows.map(function(r) {
+      return r[key].value !== '' ? parseFloat(r[key].value) : null;
+    }).filter(function(v) { return v !== null && !isNaN(v); });
+    return vals.length ? vals.reduce(function(a,b){return a+b},0) / vals.length : null;
+  }
+
+  function setAvg(id, val) {
+    var el = g(id);
+    if (val === null) { el.textContent = '—'; el.className = 'avg-v empty'; }
+    else              { el.textContent = fmt(val); el.className = 'avg-v'; }
+  }
+
+  function setFill(id, pct, state) {
+    var el = g(id);
+    el.style.width = Math.min(Math.max(pct || 0, 0), 100) + '%';
+    el.className = 'fill' + (pct && state ? ' ' + state : '');
+  }
+
+  function setCur(id, val, state) {
+    var el = g(id);
+    el.textContent = val !== null ? fmt(val) : '—';
+    el.className = 'm-cur' + (val !== null && state ? ' ' + state : '');
+  }
+
+  function recalc() {
+    var fw    = parseInt(g('i-fw').value) || 0;
+    var fwVal = g('i-fw').value;
+
+    var aV = avg('v'), aL = avg('l'), aC = avg('c');
+    setAvg('av-v', aV); setAvg('av-l', aL); setAvg('av-c', aC);
+
+    var rV = fw * 2, rL = Math.ceil(fw * 0.005), rC = Math.ceil(fw * 0.001);
+
+    g('mt-v').textContent = fw ? fmt(rV) : 'fw × 2';
+    g('mt-l').textContent = fw ? fmt(rL) : 'fw × 0.5%';
+    g('mt-c').textContent = fw ? fmt(rC) : 'fw × 0.1%';
+
+    var vP = aV !== null && fw > 0 && aV >= rV;
+    var lP = aL !== null && fw > 0 && aL >= rL;
+    var cP = aC !== null && fw > 0 && aC >= rC;
+    var vS = aV !== null && fw > 0 ? (vP?'pass':'fail') : '';
+    var lS = aL !== null && fw > 0 ? (lP?'pass':'fail') : '';
+    var cS = aC !== null && fw > 0 ? (cP?'pass':'fail') : '';
+
+    setCur('mc-v', aV, vS); setCur('mc-l', aL, lS); setCur('mc-c', aC, cS);
+
+    var pV = fw && aV !== null ? Math.round(aV/rV*100) : null;
+    var pL = fw && aL !== null ? Math.round(aL/rL*100) : null;
+    var pC = fw && aC !== null ? Math.round(aC/rC*100) : null;
+    setFill('fill-v', pV, vS); setFill('fill-l', pL, lS); setFill('fill-c', pC, cS);
+
+    var chip  = g('sChip');
+    var label = g('sLabel');
+    var fee   = g('feeBlock');
+    var note  = g('noteBar');
+
+    var any  = fwVal || aV !== null || aL !== null || aC !== null;
+    var all  = aV !== null && aL !== null && aC !== null;
+    var ok   = vP && lP && cP;
+
+    chip.className = 'status-chip';
+    fee.className  = 'fee-block';
+    note.className = 'note-bar';
+    note.textContent = '';
+
+    if (!any) {
+      label.textContent = '入力待ち';
+      return;
+    }
+
+    if (fwVal && (fw < 5000 || fw > 20000)) {
+      chip.className += ' warn';
+      label.textContent = '対象外';
+      note.className += ' show';
+      note.textContent = '対象は 5,000 〜 20,000 人。入力値（' + fmt(fw) + ' 人）は範囲外です。';
+      return;
+    }
+
+    if (!fwVal || !all) {
+      chip.className += ' warn';
+      label.textContent = '入力中...';
+      return;
+    }
+
+    if (ok) {
+      chip.className += ' ok';
+      label.textContent = '有償 OK';
+      fee.className += ' show';
+      g('feeNum').textContent = '¥' + fmt(fw * 1.5);
+    } else {
+      chip.className += ' ng';
+      label.textContent = '要相談';
+      note.className += ' show';
+      note.textContent = '基準未達の指標あり。担当者に相談の上、条件交渉または見送りを判断してください。';
+    }
+  }
+
+  g('i-fw').addEventListener('input', recalc);
+  recalc();
+</script>
+</body>
+</html>
