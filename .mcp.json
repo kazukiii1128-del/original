@@ -1,11 +1,21 @@
 {
   "mcpServers": {
+    "sequential-thinking": {
+      "type": "stdio",
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-sequential-thinking"]
+    },
     "polar-analytics": {
       "type": "http",
       "url": "https://api.polaranalytics.com/mcp",
       "headers": {
         "x-api-key": "${POLAR_API_KEY}"
       }
+    },
+    "brain": {
+      "type": "stdio",
+      "command": "C:/Users/Puser/go/bin/mcp-brain.exe",
+      "args": ["--brain-dir", "Y:/ORBI CLAUDE_0223/ORBITERS CLAUDE/ORBITERS CLAUDE/kazuki"]
     }
   }
 }
