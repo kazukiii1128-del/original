@@ -21,7 +21,19 @@ def test_fetch_amazon_sales_returns_totals():
 
 
 def test_fetch_amazon_ads_computes_roas():
-    pass  # Task 3で実装
+    from marketplace_daily_report import fetch_amazon_ads
+    result = fetch_amazon_ads("2026-04-13", data_file=FIXTURES / "amazon_ads_sample.json")
+    assert abs(result["total_spend"] - 65.00) < 0.01
+    assert abs(result["total_sales"] - 240.00) < 0.01
+    assert abs(result["roas"] - (240.00 / 65.00)) < 0.01
+    assert result["total_clicks"] == 175
+
+
+def test_fetch_amazon_ads_zero_spend():
+    from marketplace_daily_report import fetch_amazon_ads
+    result = fetch_amazon_ads("2099-01-01", data_file=FIXTURES / "amazon_ads_sample.json")
+    assert result["total_spend"] == 0.0
+    assert result["roas"] == 0.0
 
 
 def test_fetch_amazon_sales_empty_date():

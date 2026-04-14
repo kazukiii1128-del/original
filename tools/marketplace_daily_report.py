@@ -57,6 +57,49 @@ def fetch_amazon_sales(report_date: str, data_file: Path = None) -> dict:
     }
 
 
+def fetch_amazon_ads(report_date: str, data_file: Path = None) -> dict:
+    """DataKeeperからAmazon広告データを集計して返す。"""
+    path = data_file or (DATAKEEPER / "amazon_ads_daily.json")
+    if not path.exists():
+        return {
+            "error": f"DataKeeper file not found: {path}",
+            "total_spend": 0.0,
+            "total_sales": 0.0,
+            "total_clicks": 0,
+            "total_impressions": 0,
+            "roas": 0.0,
+            "cpc": 0.0,
+        }
+
+    with open(path, encoding="utf-8") as f:
+        rows = json.load(f)
+
+    total_spend = 0.0
+    total_sales = 0.0
+    total_clicks = 0
+    total_impressions = 0
+
+    for row in rows:
+        if row.get("date") != report_date:
+            continue
+        total_spend       += row.get("spend", 0.0)
+        total_sales       += row.get("sales", 0.0)
+        total_clicks      += row.get("clicks", 0)
+        total_impressions += row.get("impressions", 0)
+
+    roas = round(total_sales / total_spend, 2) if total_spend > 0 else 0.0
+    cpc  = round(total_spend / total_clicks, 2) if total_clicks > 0 else 0.0
+
+    return {
+        "total_spend":       total_spend,
+        "total_sales":       total_sales,
+        "total_clicks":      total_clicks,
+        "total_impressions": total_impressions,
+        "roas": roas,
+        "cpc":  cpc,
+    }
+
+
 if __name__ == "__main__":
     # Windows UTF-8 fix — only when running as a script, not on import
     sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding="utf-8", errors="replace")
