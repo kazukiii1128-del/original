@@ -44,3 +44,36 @@ def test_fetch_amazon_sales_empty_date():
     assert result["total_gross"] == 0.0
     assert result["total_net"] == 0.0
     assert result["brands"] == {}
+
+
+def test_fetch_rakuten_returns_totals():
+    from marketplace_daily_report import fetch_rakuten_sales
+    mock_orders = [
+        {
+            "orderDatetime": "2026-04-13T10:00:00+09:00",
+            "PackageModelList": [{"ItemModelList": [
+                {"manageNumber": "SKU-001", "units": 2, "priceTaxIncl": 3000, "itemName": "【グロミミ公式】商品A/サイズS"}
+            ]}]
+        },
+        {
+            "orderDatetime": "2026-04-13T15:00:00+09:00",
+            "PackageModelList": [{"ItemModelList": [
+                {"manageNumber": "SKU-002", "units": 1, "priceTaxIncl": 5000, "itemName": "商品B"}
+            ]}]
+        },
+        {
+            "orderDatetime": "2026-04-12T10:00:00+09:00",  # 対象外の日付
+            "PackageModelList": [{"ItemModelList": [
+                {"manageNumber": "SKU-001", "units": 5, "priceTaxIncl": 3000, "itemName": "商品A"}
+            ]}]
+        },
+    ]
+    with patch("marketplace_daily_report.RakutenRMSClient") as MockClient:
+        inst = MockClient.return_value
+        inst.search_order_numbers.return_value = ["1", "2", "3"]
+        inst.get_orders.return_value = mock_orders
+        result = fetch_rakuten_sales("2026-04-13")
+
+    assert result["total_orders"] == 2
+    assert result["total_units"] == 3
+    assert abs(result["total_sales"] - 11000.0) < 0.01  # 3000*2 + 5000*1

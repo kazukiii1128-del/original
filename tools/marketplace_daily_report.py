@@ -15,8 +15,12 @@ from pathlib import Path
 from datetime import datetime, timedelta, timezone
 from collections import defaultdict
 
+sys.path.insert(0, str(Path(__file__).parent))
+from rakuten_rms_client import RakutenRMSClient
+
 JST = timezone(timedelta(hours=9))
 DATAKEEPER = Path(__file__).parent.parent.parent / "Shared" / "datakeeper" / "latest"
+CONFIG = Path(__file__).parent.parent / "credentials" / "rakuten_rms_config.json"
 
 
 def fetch_amazon_sales(report_date: str, data_file: Path = None) -> dict:
@@ -97,6 +101,46 @@ def fetch_amazon_ads(report_date: str, data_file: Path = None) -> dict:
         "total_impressions": total_impressions,
         "roas": roas,
         "cpc":  cpc,
+    }
+
+
+def fetch_rakuten_sales(report_date: str) -> dict:
+    """Rakuten RMS APIから売上を集計して返す。"""
+    if not CONFIG.exists():
+        return {"error": f"RMS config not found: {CONFIG}", "total_orders": 0, "total_units": 0, "total_sales": 0.0}
+
+    try:
+        client = RakutenRMSClient(str(CONFIG))
+        today = datetime.now(JST).date()
+        target = datetime.strptime(report_date, "%Y-%m-%d").date()
+        days_back = (today - target).days + 1
+        order_numbers = client.search_order_numbers(days=days_back)
+        if not order_numbers:
+            return {"total_orders": 0, "total_units": 0, "total_sales": 0.0}
+        orders = client.get_orders(order_numbers)
+    except Exception as e:
+        return {"error": str(e), "total_orders": 0, "total_units": 0, "total_sales": 0.0}
+
+    total_orders = 0
+    total_units = 0
+    total_sales = 0.0
+
+    for o in orders:
+        order_date = (o.get("orderDatetime") or "")[:10]
+        if order_date != report_date:
+            continue
+        total_orders += 1
+        for pkg in (o.get("PackageModelList") or []):
+            for item in (pkg.get("ItemModelList") or []):
+                units = int(item.get("units") or 1)
+                price = float(item.get("priceTaxIncl") or item.get("price") or 0)
+                total_units += units
+                total_sales += price * units
+
+    return {
+        "total_orders": total_orders,
+        "total_units":  total_units,
+        "total_sales":  total_sales,
     }
 
 
