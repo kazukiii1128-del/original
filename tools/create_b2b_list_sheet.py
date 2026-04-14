@@ -690,19 +690,28 @@ svc.spreadsheets().values().update(
     valueInputOption="RAW", body={"values": all_data},
 ).execute()
 
-# 公式URL列（index 8）をハイパーリンク化
-URL_COL = H.index("公式URL")
+import re
+
+def extract_url(text):
+    """セル内テキストからURLを抽出（末尾の日本語説明を除去）"""
+    m = re.search(r'https?://[^\s　（）()]+', text)
+    return m.group(0).rstrip('）)') if m else None
+
+# リンク化対象列
+LINK_COLS = [H.index("公式URL"), H.index("卸・問い合わせ先")]
 link_reqs = []
 for i, row in enumerate(rows):
-    url = row[URL_COL] if URL_COL < len(row) else ""
-    if url and url.startswith("http"):
-        link_reqs.append({"updateCells": {
-            "rows": [{"values": [{"userEnteredValue": {"stringValue": url},
-                                  "textFormatRuns": [{"format": {"link": {"uri": url}}}]}]}],
-            "fields": "userEnteredValue,textFormatRuns",
-            "range": {"sheetId": sheet_id, "startRowIndex": i+1,
-                      "startColumnIndex": URL_COL, "endColumnIndex": URL_COL+1},
-        }})
+    for col_idx in LINK_COLS:
+        cell_text = row[col_idx] if col_idx < len(row) else ""
+        url = extract_url(cell_text) if cell_text else None
+        if url:
+            link_reqs.append({"updateCells": {
+                "rows": [{"values": [{"userEnteredValue": {"stringValue": cell_text},
+                                      "textFormatRuns": [{"format": {"link": {"uri": url}}}]}]}],
+                "fields": "userEnteredValue,textFormatRuns",
+                "range": {"sheetId": sheet_id, "startRowIndex": i+1,
+                          "startColumnIndex": col_idx, "endColumnIndex": col_idx+1},
+            }})
 if link_reqs:
     svc.spreadsheets().batchUpdate(spreadsheetId=SHEET_ID, body={"requests": link_reqs}).execute()
 
