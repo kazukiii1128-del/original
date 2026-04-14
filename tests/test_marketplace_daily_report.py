@@ -28,5 +28,7 @@ def test_fetch_amazon_sales_empty_date():
     from marketplace_daily_report import fetch_amazon_sales
     result = fetch_amazon_sales("2099-01-01", data_file=FIXTURES / "amazon_sales_sample.json")
     assert result["total_orders"] == 0
+    assert result["total_units"] == 0
     assert result["total_gross"] == 0.0
+    assert result["total_net"] == 0.0
     assert result["brands"] == {}

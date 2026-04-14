@@ -23,7 +23,14 @@ def fetch_amazon_sales(report_date: str, data_file: Path = None) -> dict:
     """DataKeeperからAmazon売上を集計して返す。"""
     path = data_file or (DATAKEEPER / "amazon_sales_daily.json")
     if not path.exists():
-        return {"error": f"DataKeeper file not found: {path}", "total_orders": 0, "total_units": 0, "total_gross": 0.0, "total_net": 0.0, "brands": {}}
+        return {
+            "error": f"DataKeeper file not found: {path}",
+            "total_orders": 0,
+            "total_units": 0,
+            "total_gross": 0.0,
+            "total_net": 0.0,
+            "brands": {},
+        }
 
     with open(path, encoding="utf-8") as f:
         rows = json.load(f)
