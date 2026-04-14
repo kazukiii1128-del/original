@@ -1,0 +1,5 @@
+[
+  {"date": "2026-04-13", "brand": "Grosmimi", "spend": 45.00, "sales": 180.00, "clicks": 120, "impressions": 5000, "orders": 3},
+  {"date": "2026-04-13", "brand": "Naeiae",   "spend": 20.00, "sales": 60.00,  "clicks": 55,  "impressions": 2000, "orders": 1},
+  {"date": "2026-04-12", "brand": "Grosmimi", "spend": 50.00, "sales": 200.00, "clicks": 130, "impressions": 5200, "orders": 4}
+]

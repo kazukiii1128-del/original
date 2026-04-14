@@ -1,0 +1,5 @@
+[
+  {"date": "2026-04-13", "brand": "Grosmimi", "gross_sales": 150.00, "net_sales": 120.00, "orders": 2, "units": 3, "fees": 30.00, "refunds": 0.0},
+  {"date": "2026-04-13", "brand": "Naeiae",   "gross_sales": 80.00,  "net_sales": 65.00,  "orders": 1, "units": 1, "fees": 15.00, "refunds": 0.0},
+  {"date": "2026-04-12", "brand": "Grosmimi", "gross_sales": 200.00, "net_sales": 160.00, "orders": 3, "units": 4, "fees": 40.00, "refunds": 0.0}
+]
