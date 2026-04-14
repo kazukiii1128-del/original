@@ -697,7 +697,7 @@ def extract_url(text):
     m = re.search(r'https?://[^\s　（）()]+', text)
     return m.group(0).rstrip('）)') if m else None
 
-# リンク化対象列
+# リンク化対象列: HYPERLINK数式で書き直す
 LINK_COLS = [H.index("公式URL"), H.index("卸・問い合わせ先")]
 link_reqs = []
 for i, row in enumerate(rows):
@@ -705,10 +705,11 @@ for i, row in enumerate(rows):
         cell_text = row[col_idx] if col_idx < len(row) else ""
         url = extract_url(cell_text) if cell_text else None
         if url:
+            safe_text = cell_text.replace('"', "'")
+            formula = f'=HYPERLINK("{url}","{safe_text}")'
             link_reqs.append({"updateCells": {
-                "rows": [{"values": [{"userEnteredValue": {"stringValue": cell_text},
-                                      "textFormatRuns": [{"format": {"link": {"uri": url}}}]}]}],
-                "fields": "userEnteredValue,textFormatRuns",
+                "rows": [{"values": [{"userEnteredValue": {"formulaValue": formula}}]}],
+                "fields": "userEnteredValue",
                 "range": {"sheetId": sheet_id, "startRowIndex": i+1,
                           "startColumnIndex": col_idx, "endColumnIndex": col_idx+1},
             }})
@@ -782,7 +783,7 @@ for i, row in enumerate(rows):
     }})
 
 # 列幅（14列）
-col_w = [165,60,26,200,145,120,190,120,200,200,220,200,200,240]
+col_w = [165,50,220,200,140,200,140,220,220,200,220,200,220,240]
 for ci,w in enumerate(col_w):
     reqs.append({"updateDimensionProperties":{
         "range":{"sheetId":sheet_id,"dimension":"COLUMNS","startIndex":ci,"endIndex":ci+1},
