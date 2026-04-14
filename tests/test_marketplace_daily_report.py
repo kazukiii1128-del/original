@@ -70,8 +70,7 @@ def test_fetch_rakuten_returns_totals():
     ]
     with patch("marketplace_daily_report.RakutenRMSClient") as MockClient:
         inst = MockClient.return_value
-        inst.search_order_numbers.return_value = ["1", "2", "3"]
-        inst.get_orders.return_value = mock_orders
+        inst.list_orders.return_value = mock_orders
         result = fetch_rakuten_sales("2026-04-13")
 
     assert result["total_orders"] == 2

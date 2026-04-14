@@ -111,13 +111,9 @@ def fetch_rakuten_sales(report_date: str) -> dict:
 
     try:
         client = RakutenRMSClient(str(CONFIG))
-        today = datetime.now(JST).date()
-        target = datetime.strptime(report_date, "%Y-%m-%d").date()
-        days_back = (today - target).days + 1
-        order_numbers = client.search_order_numbers(days=days_back)
-        if not order_numbers:
+        orders = client.list_orders(params={"dateType": "1", "startDatetime": f"{report_date}T00:00:00+0900", "endDatetime": f"{report_date}T23:59:59+0900"})
+        if not orders:
             return {"total_orders": 0, "total_units": 0, "total_sales": 0.0}
-        orders = client.get_orders(order_numbers)
     except Exception as e:
         return {"error": str(e), "total_orders": 0, "total_units": 0, "total_sales": 0.0}
 
