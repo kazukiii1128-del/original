@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 """
 create_b2b_list_sheet.py
-グロミミ B2B リスト（ベビー専門 40社）を Google Spreadsheet に出力する
-列: カテゴリ / 優先度 / # / 社名 / 規模 / 主要エリア / 本社 / TEL / 卸・問合せ先 / 公式URL / 情報ソース / SNS / 担当者情報 / アプローチメモ
+グロミミ B2B リスト（ベビー専門 50社）を Google Spreadsheet に出力する
+列: カテゴリ / # / 社名 / 規模 / 主要エリア / 本社 / TEL / 卸・問合せ先 / 公式URL / 情報ソース / SNS / 担当者情報 / アプローチメモ
 """
 
 import sys, io
@@ -546,6 +546,142 @@ rows = [
  "Instagram: @kidsec_official",
  "ベビー用品・輸入玩具・出産お祝いの卸・仕入れ対応",
  "卸・仕入れ対応。問い合わせフォームから取引交渉"],
+
+# ===== 追加10社（41〜50） =====
+
+# ── B. 百貨店 追加 ──
+["B. 百貨店（ベビー売場）","41",
+ "株式会社そごう・西武",
+ "全国17店舗（そごう10＋西武7）・セブン＆アイHD傘下",
+ "全国（本社：東京/池袋）",
+ "〒171-8569 東京都豊島区南池袋1-28-1",
+ "03-3981-0111（池袋西武代表）",
+ "https://www.sogo-seibu.co.jp/inquiry/",
+ "https://www.sogo-seibu.co.jp/",
+ "sogo-seibu.co.jp ／ Wikipedia ／ セブン＆アイHD IR",
+ "Instagram: @sogoseibu ／ X: @sogo_seibu",
+ "MD部門（キッズ・ベビー担当バイヤー）",
+ "池袋西武・横浜そごうのMD担当へのアプローチ推奨。展示会または問い合わせフォーム"],
+
+["B. 百貨店（ベビー売場）","42",
+ "株式会社松屋（松屋銀座）",
+ "2店舗（銀座・浅草）",
+ "東京（銀座・浅草）",
+ "〒104-8130 東京都中央区銀座3-6-1",
+ "03-3567-1211（銀座本店代表）",
+ "https://www.matsuya.com/contact/",
+ "https://www.matsuya.com/",
+ "matsuya.com ／ Wikipedia（松屋銀座）",
+ "Instagram: @matsuya_ginza ／ X: @matsuya_ginza",
+ "MD部門（ベビー・キッズ担当バイヤー）",
+ "銀座の高感度百貨店。ラグジュアリー・セレクト系に強み。フォームまたは展示会でアプローチ"],
+
+# ── C. セレクトショップ 追加 ──
+["C. セレクトショップ","43",
+ "gelato pique（株式会社マッシュスタイルラボ）",
+ "国内200店舗以上・売上100億円超",
+ "全国（本社：東京/渋谷）",
+ "〒150-8510 東京都渋谷区渋谷2-22-3",
+ "03-6434-1111（マッシュHD代表）",
+ "https://gelato-pique.com/contact/",
+ "https://gelato-pique.com/",
+ "gelato-pique.com ／ mash-style.com ／ prtimes.jp",
+ "Instagram: @gelato_pique（700K+フォロワー）",
+ "gelato pique事業部MD（マッシュスタイルラボ）",
+ "Baby・Kidsライン展開中。ギフト・コラボ提案が有効。問い合わせフォームからアプローチ"],
+
+["C. セレクトショップ","44",
+ "niko and...（株式会社アダストリア）",
+ "東証プライム上場・グループ売上2,000億円超・国内外1,400店以上",
+ "全国（本社：東京/渋谷）",
+ "〒150-0021 東京都渋谷区恵比寿西1-34-1",
+ "0120-601-612（お客様窓口）",
+ "https://www.adastria.co.jp/contact/",
+ "https://www.nikoand.jp/",
+ "nikoand.jp ／ adastria.co.jp ／ 東証IR情報",
+ "Instagram: @nikoand_official ／ X: @nikoand_pr",
+ "niko and...担当MD（アダストリア商品本部）",
+ "キッズ・ベビーライン展開。ライフスタイル提案型。コラボ・バイイング共にアプローチ可"],
+
+# ── D. EC・通販 追加 ──
+["D. EC・通販","45",
+ "株式会社ZOZO（ZOZOTOWN）",
+ "東証プライム上場・年商2,000億円超・会員1,000万人以上",
+ "全国（本社：千葉/千葉市）",
+ "〒261-0023 千葉県千葉市美浜区中瀬1-7-1",
+ "043-301-3000（代表）",
+ "https://corp.zozo.com/contact/",
+ "https://zozo.jp/shop/baby-kids/",
+ "corp.zozo.com ／ 東証IR情報 ／ zozo.jp（ベビー・キッズカテゴリ）",
+ "Instagram: @zozo_official ／ X: @ZOZOTOWN_PR",
+ "ZOZO出店MD担当（キッズ・ベビー部門）",
+ "国内最大EC。多数のベビーブランドが出店中。出店申請フォームからアプローチ"],
+
+["D. EC・通販","46",
+ "Qoo10 Japan（ギオシスジャパン合同会社）",
+ "月間1,200万人利用・韓国系EC・日本市場急成長",
+ "全国（本社：東京/品川）",
+ "〒141-0032 東京都品川区大崎1-11-2",
+ "",
+ "https://www.qoo10.jp/seller/",
+ "https://www.qoo10.jp/",
+ "qoo10.jp ／ WebSearch（韓国ブランド出品多数確認）",
+ "Instagram: @qoo10japan ／ X: @Qoo10_Japan",
+ "出店担当MD: 出店申請フォームより",
+ "韓国系ブランド（grosmimi等）との親和性が高い。セラー登録後すぐ出品開始可"],
+
+["D. EC・通販","47",
+ "株式会社フェリシモ",
+ "東証プライム上場・通販大手・会員100万人超",
+ "全国（本社：兵庫/神戸）",
+ "〒650-0041 兵庫県神戸市中央区新港町7番1号",
+ "0120-055-820（お客様窓口）",
+ "https://www.felissimo.co.jp/company/contact/",
+ "https://www.felissimo.co.jp/",
+ "felissimo.co.jp/company/ ／ Wikipedia",
+ "Instagram: @felissimo_official ／ X: @FELISSIMO",
+ "商品担当バイヤー（ベビー・マタニティ部門）",
+ "カタログ・EC掲載交渉が有効。ブランド認知向上に繋がる。問い合わせフォームから"],
+
+# ── G. その他ベビー専門 追加 ──
+["G. その他ベビー専門","48",
+ "株式会社コンビ",
+ "東証スタンダード上場・売上約137億円・従業員約370名",
+ "全国（本社：東京/文京区）",
+ "〒112-8560 東京都文京区大塚3-14-5",
+ "03-5978-2300（代表）",
+ "https://www.combi.co.jp/inquiry/",
+ "https://www.combi.co.jp/",
+ "combi.co.jp/company/ ／ 東証IR情報 ／ Wikipedia",
+ "Instagram: @combi_official_jp ／ X: @COMBI_info",
+ "代表取締役社長: 坂本一喜 ／ 営業部（卸・取引相談）",
+ "ベビーカー・チャイルドシート大手。卸・共同展開の提案余地あり。問い合わせフォームから"],
+
+["G. その他ベビー専門","49",
+ "株式会社ニトリホールディングス",
+ "全国930店舗以上・東証プライム上場・売上9,000億円超",
+ "全国（本社：北海道/札幌）",
+ "〒001-0907 北海道札幌市北区新琴似七条1-2-39",
+ "011-330-9000（代表）",
+ "https://www.nitori-net.jp/customer/inquiry/",
+ "https://www.nitori-net.jp/",
+ "nitorihd.co.jp ／ 東証IR情報 ／ Wikipedia",
+ "Instagram: @nitori_official ／ X: @nitoriofficial",
+ "商品部（ベビー・キッズ担当MD）",
+ "ベビー寝具・インテリア用品コーナーあり。取引申請フォームからアプローチ"],
+
+["G. その他ベビー専門","50",
+ "株式会社スタジオアリス",
+ "全国550店舗以上・東証プライム上場",
+ "全国（本社：大阪/大阪市）",
+ "〒530-0003 大阪府大阪市北区堂島1-5-17",
+ "06-6344-8181（代表）",
+ "https://www.studio-alice.co.jp/contact/",
+ "https://www.studio-alice.co.jp/",
+ "studio-alice.co.jp ／ 東証IR情報 ／ Wikipedia",
+ "Instagram: @studioalice_official ／ X: @STUDIO_ALICE",
+ "商品開発部・MD部門（グッズ関連担当）",
+ "ベビー写真＋ギフトグッズ販売あり。撮影衣装・小物のコラボ提案が有効。フォームから"],
 ]
 
 all_data = [H] + rows
