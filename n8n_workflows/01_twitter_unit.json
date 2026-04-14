@@ -1,0 +1,416 @@
+{
+  "name": "🐦 Twitter部隊 - @grosmimi_jp",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "## 🐦 Twitter部隊 - @grosmimi_jp\n**ターゲット**: 1歳10ヶ月の娘を持つ日本人ママ（20代後半〜30代）\n\n**部隊構成**: 総監督 → 監督 → [ツイート / コメンター / 調査マン / 企画マン / ハッシュタグ]\n\n📁 実行ディレクトリ: `C:\\Users\\Puser\\Desktop\\kazuki`",
+        "height": 160,
+        "width": 700,
+        "color": 5
+      },
+      "id": "a1b2c3d4-0001-0001-0001-000000000001",
+      "name": "📋 ワークフロー概要",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        0,
+        -280
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## ⏰ 朝のルーティン（毎日 09:00 JST）\n- 総監督: 昨日の全部隊実績をTeams報告\n- 監督: 今日の投稿予定・承認状況をTeams報告",
+        "height": 100,
+        "width": 380,
+        "color": 4
+      },
+      "id": "a1b2c3d4-0002-0002-0002-000000000002",
+      "name": "📋 朝ルーティン説明",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        0,
+        -120
+      ]
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 0 * * *"
+            }
+          ]
+        }
+      },
+      "id": "a1b2c3d4-0003-0003-0003-000000000003",
+      "name": "⏰ 毎日 09:00 JST",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        60
+      ]
+    },
+    {
+      "parameters": {
+        "command": "cd /d C:\\Users\\Puser\\Desktop\\kazuki && python -X utf8 tools/soukantoku.py"
+      },
+      "id": "a1b2c3d4-0004-0004-0004-000000000004",
+      "name": "👑 総監督 - 昨日の実績報告",
+      "type": "n8n-nodes-base.executeCommand",
+      "typeVersion": 1,
+      "position": [
+        280,
+        -40
+      ]
+    },
+    {
+      "parameters": {
+        "command": "cd /d C:\\Users\\Puser\\Desktop\\kazuki && python -X utf8 tools/twitter_supervisor.py"
+      },
+      "id": "a1b2c3d4-0005-0005-0005-000000000005",
+      "name": "📊 監督 - 今日の投稿予定報告",
+      "type": "n8n-nodes-base.executeCommand",
+      "typeVersion": 1,
+      "position": [
+        280,
+        160
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## 📝 朝ツイート（毎日 10:00 JST）\n承認済みの朝枠ツイートを自動投稿\nツール: `twitter_scheduler.py --slot 10`",
+        "height": 100,
+        "width": 340,
+        "color": 4
+      },
+      "id": "a1b2c3d4-0006-0006-0006-000000000006",
+      "name": "📋 朝ツイート説明",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        700,
+        -120
+      ]
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 1 * * *"
+            }
+          ]
+        }
+      },
+      "id": "a1b2c3d4-0007-0007-0007-000000000007",
+      "name": "⏰ 毎日 10:00 JST",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        700,
+        60
+      ]
+    },
+    {
+      "parameters": {
+        "command": "cd /d C:\\Users\\Puser\\Desktop\\kazuki && python -X utf8 tools/twitter_scheduler.py --slot 10"
+      },
+      "id": "a1b2c3d4-0008-0008-0008-000000000008",
+      "name": "🐦 ツイート（朝枠 10:00）",
+      "type": "n8n-nodes-base.executeCommand",
+      "typeVersion": 1,
+      "position": [
+        980,
+        60
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## 💬 コメンター（毎日 12:00〜16:00、1時間ごと）\n育児ツイートに共感コメントを投稿（1回1人）\nフィルター: 競合・漫画アニメ系・既送信者を除外\nツール: `twitter_engage.py --limit 1`",
+        "height": 120,
+        "width": 400,
+        "color": 3
+      },
+      "id": "a1b2c3d4-0009-0009-0009-000000000009",
+      "name": "📋 コメンター説明",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1400,
+        -120
+      ]
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 3-7 * * *"
+            }
+          ]
+        }
+      },
+      "id": "a1b2c3d4-0010-0010-0010-000000000010",
+      "name": "⏰ 毎日 12〜16時（1時間ごと）",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        1400,
+        60
+      ]
+    },
+    {
+      "parameters": {
+        "command": "cd /d C:\\Users\\Puser\\Desktop\\kazuki && python -X utf8 tools/twitter_engage.py --limit 1"
+      },
+      "id": "a1b2c3d4-0011-0011-0011-000000000011",
+      "name": "💬 コメンター - 共感コメント投稿",
+      "type": "n8n-nodes-base.executeCommand",
+      "typeVersion": 1,
+      "position": [
+        1700,
+        60
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## 🌙 夜ツイート（毎日 19:00 JST）\n承認済みの夜枠ツイートを自動投稿\nツール: `twitter_scheduler.py --slot 19`",
+        "height": 100,
+        "width": 340,
+        "color": 4
+      },
+      "id": "a1b2c3d4-0012-0012-0012-000000000012",
+      "name": "📋 夜ツイート説明",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        2100,
+        -120
+      ]
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 10 * * *"
+            }
+          ]
+        }
+      },
+      "id": "a1b2c3d4-0013-0013-0013-000000000013",
+      "name": "⏰ 毎日 19:00 JST",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        2100,
+        60
+      ]
+    },
+    {
+      "parameters": {
+        "command": "cd /d C:\\Users\\Puser\\Desktop\\kazuki && python -X utf8 tools/twitter_scheduler.py --slot 19"
+      },
+      "id": "a1b2c3d4-0014-0014-0014-000000000014",
+      "name": "🐦 ツイート（夜枠 19:00）",
+      "type": "n8n-nodes-base.executeCommand",
+      "typeVersion": 1,
+      "position": [
+        2380,
+        60
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## 📅 週次ルーティン\n\n**毎週金曜 09:00**: 企画マン（翌週7日分プラン生成→Excel→Teams）\n**毎週水・金 09:00**: 調査マン（競合8社のTwitter運用調査→Teams）\n**毎週金曜 09:00**: ハッシュタグ調査マン（人気タグ調査→Teams）",
+        "height": 140,
+        "width": 500,
+        "color": 6
+      },
+      "id": "a1b2c3d4-0015-0015-0015-000000000015",
+      "name": "📋 週次ルーティン説明",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        700,
+        340
+      ]
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 0 * * 5"
+            }
+          ]
+        }
+      },
+      "id": "a1b2c3d4-0016-0016-0016-000000000016",
+      "name": "⏰ 毎週金曜 09:00 JST",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        700,
+        540
+      ]
+    },
+    {
+      "parameters": {
+        "command": "cd /d C:\\Users\\Puser\\Desktop\\kazuki && python -X utf8 tools/twitter_scheduler.py --generate-weekly"
+      },
+      "id": "a1b2c3d4-0017-0017-0017-000000000017",
+      "name": "📝 企画マン - 翌週プラン生成",
+      "type": "n8n-nodes-base.executeCommand",
+      "typeVersion": 1,
+      "position": [
+        980,
+        440
+      ]
+    },
+    {
+      "parameters": {
+        "command": "cd /d C:\\Users\\Puser\\Desktop\\kazuki && python -X utf8 tools/twitter_hashtag.py"
+      },
+      "id": "a1b2c3d4-0018-0018-0018-000000000018",
+      "name": "🏷️ ハッシュタグ調査マン",
+      "type": "n8n-nodes-base.executeCommand",
+      "typeVersion": 1,
+      "position": [
+        980,
+        640
+      ]
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 0 * * 3,5"
+            }
+          ]
+        }
+      },
+      "id": "a1b2c3d4-0019-0019-0019-000000000019",
+      "name": "⏰ 毎週水・金 09:00 JST",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        1400,
+        540
+      ]
+    },
+    {
+      "parameters": {
+        "command": "cd /d C:\\Users\\Puser\\Desktop\\kazuki && python -X utf8 tools/twitter_research.py"
+      },
+      "id": "a1b2c3d4-0020-0020-0020-000000000020",
+      "name": "🔍 調査マン - 競合Twitter分析",
+      "type": "n8n-nodes-base.executeCommand",
+      "typeVersion": 1,
+      "position": [
+        1700,
+        540
+      ]
+    }
+  ],
+  "connections": {
+    "⏰ 毎日 09:00 JST": {
+      "main": [
+        [
+          {
+            "node": "👑 総監督 - 昨日の実績報告",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "📊 監督 - 今日の投稿予定報告",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "⏰ 毎日 10:00 JST": {
+      "main": [
+        [
+          {
+            "node": "🐦 ツイート（朝枠 10:00）",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "⏰ 毎日 12〜16時（1時間ごと）": {
+      "main": [
+        [
+          {
+            "node": "💬 コメンター - 共感コメント投稿",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "⏰ 毎日 19:00 JST": {
+      "main": [
+        [
+          {
+            "node": "🐦 ツイート（夜枠 19:00）",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "⏰ 毎週金曜 09:00 JST": {
+      "main": [
+        [
+          {
+            "node": "📝 企画マン - 翌週プラン生成",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "🏷️ ハッシュタグ調査マン",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "⏰ 毎週水・金 09:00 JST": {
+      "main": [
+        [
+          {
+            "node": "🔍 調査マン - 競合Twitter分析",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "tags": [
+    {
+      "name": "Twitter"
+    },
+    {
+      "name": "SNS運用"
+    }
+  ],
+  "id": "tw001"
+}

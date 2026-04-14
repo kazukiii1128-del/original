@@ -1,0 +1,314 @@
+{
+  "name": "📊 アナリティクス レポート生成",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "## 📊 アナリティクス レポート生成\n**データソース**: Polar Analytics MCP → Excel/Notion出力\n\n含まれるレポート:\n- Polar Financial Model（月次P&L）\n- Polar Dashboard（6タブ売上分析）\n- Klaviyo Email Dashboard\n- Polar Ads分類\n- Amazon日次レポート",
+        "height": 180,
+        "width": 640,
+        "color": 5
+      },
+      "id": "e1000001-0001-0001-0001-000000000001",
+      "name": "📋 ワークフロー概要",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        0,
+        -300
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## 📈 Polar Financial Model\n月次P&L + 8タブExcel生成\nJan 2024〜現在の26ヶ月データ",
+        "height": 100,
+        "width": 320,
+        "color": 4
+      },
+      "id": "e1000001-0002-0002-0002-000000000002",
+      "name": "📋 Financial Model説明",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        0,
+        -100
+      ]
+    },
+    {
+      "parameters": {},
+      "id": "e1000001-0003-0003-0003-000000000003",
+      "name": "▶️ 手動トリガー（Financial Model）",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        60
+      ]
+    },
+    {
+      "parameters": {
+        "command": "cd /d C:\\Users\\Puser\\Desktop\\kazuki && python -X utf8 tools/polar_financial_model.py"
+      },
+      "id": "e1000001-0004-0004-0004-000000000004",
+      "name": "💰 Polar Financial Model生成",
+      "type": "n8n-nodes-base.executeCommand",
+      "typeVersion": 1,
+      "position": [
+        280,
+        60
+      ]
+    },
+    {
+      "parameters": {
+        "content": "出力: `Data Storage/Polar_Financial_Model.xlsx`\nタブ: Revenue, Ads, Campaign Vintage, Organic, CM, Model Check, Campaign Summary, Influencer Dashboard",
+        "height": 80,
+        "width": 400,
+        "color": 3
+      },
+      "id": "e1000001-0005-0005-0005-000000000005",
+      "name": "📋 出力先",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        280,
+        160
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## 📊 Polar Dashboard\n6タブ売上分析ダッシュボード",
+        "height": 80,
+        "width": 300,
+        "color": 4
+      },
+      "id": "e1000001-0006-0006-0006-000000000006",
+      "name": "📋 Dashboard説明",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        700,
+        -100
+      ]
+    },
+    {
+      "parameters": {},
+      "id": "e1000001-0007-0007-0007-000000000007",
+      "name": "▶️ 手動トリガー（Dashboard）",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        700,
+        60
+      ]
+    },
+    {
+      "parameters": {
+        "command": "cd /d C:\\Users\\Puser\\Desktop\\kazuki && python -X utf8 tools/polar_dashboard_builder.py"
+      },
+      "id": "e1000001-0008-0008-0008-000000000008",
+      "name": "📊 Polar Dashboard生成",
+      "type": "n8n-nodes-base.executeCommand",
+      "typeVersion": 1,
+      "position": [
+        980,
+        60
+      ]
+    },
+    {
+      "parameters": {
+        "content": "出力: `Data Storage/Polar_Dashboard.xlsx`\nタブ: 売上, 広告費, Organic vs Paid, 粗利, 商品別, データ状況",
+        "height": 80,
+        "width": 380,
+        "color": 3
+      },
+      "id": "e1000001-0009-0009-0009-000000000009",
+      "name": "📋 Dashboard出力先",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        980,
+        160
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## 📧 Klaviyo Email Dashboard\nフロー(自動化) + キャンペーン(手動)のパフォーマンス分析",
+        "height": 80,
+        "width": 340,
+        "color": 4
+      },
+      "id": "e1000001-0010-0010-0010-000000000010",
+      "name": "📋 Klaviyo説明",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1380,
+        -100
+      ]
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 1 * * 1"
+            }
+          ]
+        }
+      },
+      "id": "e1000001-0011-0011-0011-000000000011",
+      "name": "⏰ 毎週月曜 10:00（Klaviyo）",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        1380,
+        60
+      ]
+    },
+    {
+      "parameters": {
+        "command": "cd /d C:\\Users\\Puser\\Desktop\\kazuki && python -X utf8 tools/generate_daily_excel.py --type klaviyo"
+      },
+      "id": "e1000001-0012-0012-0012-000000000012",
+      "name": "📧 Klaviyo Dashboard生成",
+      "type": "n8n-nodes-base.executeCommand",
+      "typeVersion": 1,
+      "position": [
+        1660,
+        60
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## 🛒 Amazon 日次レポート\n毎日自動でAmazon売上を集計",
+        "height": 80,
+        "width": 300,
+        "color": 6
+      },
+      "id": "e1000001-0013-0013-0013-000000000013",
+      "name": "📋 Amazon説明",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        0,
+        360
+      ]
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 1 * * *"
+            }
+          ]
+        }
+      },
+      "id": "e1000001-0014-0014-0014-000000000014",
+      "name": "⏰ 毎日 10:00 JST（Amazon）",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        520
+      ]
+    },
+    {
+      "parameters": {
+        "command": "cd /d C:\\Users\\Puser\\Desktop\\kazuki && python -X utf8 tools/amazon_daily_report.py"
+      },
+      "id": "e1000001-0015-0015-0015-000000000015",
+      "name": "🛒 Amazon日次レポート生成",
+      "type": "n8n-nodes-base.executeCommand",
+      "typeVersion": 1,
+      "position": [
+        280,
+        520
+      ]
+    },
+    {
+      "parameters": {
+        "command": "cd /d C:\\Users\\Puser\\Desktop\\kazuki && python -X utf8 tools/teams_notify.py --subject Amazonデイリーレポート完了"
+      },
+      "id": "e1000001-0016-0016-0016-000000000016",
+      "name": "📨 Teamsレポート通知",
+      "type": "n8n-nodes-base.executeCommand",
+      "typeVersion": 1,
+      "position": [
+        560,
+        520
+      ]
+    }
+  ],
+  "connections": {
+    "▶️ 手動トリガー（Financial Model）": {
+      "main": [
+        [
+          {
+            "node": "💰 Polar Financial Model生成",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "▶️ 手動トリガー（Dashboard）": {
+      "main": [
+        [
+          {
+            "node": "📊 Polar Dashboard生成",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "⏰ 毎週月曜 10:00（Klaviyo）": {
+      "main": [
+        [
+          {
+            "node": "📧 Klaviyo Dashboard生成",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "⏰ 毎日 10:00 JST（Amazon）": {
+      "main": [
+        [
+          {
+            "node": "🛒 Amazon日次レポート生成",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🛒 Amazon日次レポート生成": {
+      "main": [
+        [
+          {
+            "node": "📨 Teamsレポート通知",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "tags": [
+    {
+      "name": "アナリティクス"
+    },
+    {
+      "name": "レポート"
+    }
+  ],
+  "id": "an001"
+}

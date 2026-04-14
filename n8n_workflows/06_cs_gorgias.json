@@ -1,0 +1,142 @@
+{
+  "name": "🎧 CS Gorgias テンプレート管理",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "## 🎧 CS Gorgias テンプレート自動生成\nGorgias の過去6ヶ月のクローズ済みチケットを分析 → CS返信テンプレートをGoogle Sheetsに自動生成\n\n📁 ツール: `tools/gorgias_cs_template_builder.py`\n⚙️ 必要キー: GORGIAS_DOMAIN, GORGIAS_EMAIL, GORGIAS_API_KEY, ANTHROPIC_API_KEY",
+        "height": 160,
+        "width": 680,
+        "color": 5
+      },
+      "id": "f1000001-0001-0001-0001-000000000001",
+      "name": "📋 ワークフロー概要",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        0,
+        -280
+      ]
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 1 1 * *"
+            }
+          ]
+        }
+      },
+      "id": "f1000001-0002-0002-0002-000000000002",
+      "name": "⏰ 毎月1日 10:00（月次更新）",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        -60
+      ]
+    },
+    {
+      "parameters": {},
+      "id": "f1000001-0003-0003-0003-000000000003",
+      "name": "▶️ 手動トリガー",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        140
+      ]
+    },
+    {
+      "parameters": {
+        "command": "cd /d C:\\Users\\Puser\\Desktop\\kazuki && python -X utf8 tools/gorgias_cs_template_builder.py"
+      },
+      "id": "f1000001-0004-0004-0004-000000000004",
+      "name": "🎧 Gorgiasチケット分析 + テンプレート生成",
+      "type": "n8n-nodes-base.executeCommand",
+      "typeVersion": 1,
+      "position": [
+        340,
+        40
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**処理内容**:\n1. 過去6ヶ月のclosedチケット全会話を取得\n2. Claude で不満タイプ別に分類\n3. 各タイプの標準返信テンプレートを生成\n4. Google Sheetsに出力\n\n**目標**: 外注担当者がテンプレートだけで大半のCS対応可能に",
+        "height": 140,
+        "width": 380,
+        "color": 4
+      },
+      "id": "f1000001-0005-0005-0005-000000000005",
+      "name": "📋 処理詳細",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        340,
+        160
+      ]
+    },
+    {
+      "parameters": {
+        "command": "cd /d C:\\Users\\Puser\\Desktop\\kazuki && python -X utf8 tools/teams_notify.py --subject CSテンプレート月次更新完了"
+      },
+      "id": "f1000001-0006-0006-0006-000000000006",
+      "name": "📨 Teams完了通知",
+      "type": "n8n-nodes-base.executeCommand",
+      "typeVersion": 1,
+      "position": [
+        680,
+        40
+      ]
+    }
+  ],
+  "connections": {
+    "⏰ 毎月1日 10:00（月次更新）": {
+      "main": [
+        [
+          {
+            "node": "🎧 Gorgiasチケット分析 + テンプレート生成",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "▶️ 手動トリガー": {
+      "main": [
+        [
+          {
+            "node": "🎧 Gorgiasチケット分析 + テンプレート生成",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🎧 Gorgiasチケット分析 + テンプレート生成": {
+      "main": [
+        [
+          {
+            "node": "📨 Teams完了通知",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "tags": [
+    {
+      "name": "CS"
+    },
+    {
+      "name": "Gorgias"
+    }
+  ],
+  "id": "cs001"
+}

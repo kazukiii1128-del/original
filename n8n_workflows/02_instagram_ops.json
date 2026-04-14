@@ -1,0 +1,294 @@
+{
+  "name": "📸 Instagram コンテンツ運営 - Grosmimi JP",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "## 📸 Instagram コンテンツ運営\n**アカウント**: Grosmimi Japan\n**フロー**: 企画 → 競合調査 → 制作 → 投稿\n\n📁 実行ディレクトリ: `C:\\Users\\Puser\\Desktop\\kazuki`",
+        "height": 140,
+        "width": 600,
+        "color": 5
+      },
+      "id": "b1000001-0001-0001-0001-000000000001",
+      "name": "📋 ワークフロー概要",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        0,
+        -260
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## 🌅 毎朝ルーティン（手動実行）\n1. 競合チェック\n2. アイデア出し\n3. Teams共有",
+        "height": 120,
+        "width": 280,
+        "color": 4
+      },
+      "id": "b1000001-0002-0002-0002-000000000002",
+      "name": "📋 毎朝説明",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        0,
+        -80
+      ]
+    },
+    {
+      "parameters": {},
+      "id": "b1000001-0003-0003-0003-000000000003",
+      "name": "▶️ 手動トリガー（朝ルーティン）",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        80
+      ]
+    },
+    {
+      "parameters": {
+        "command": "cd /d C:\\Users\\Puser\\Desktop\\kazuki && python -X utf8 tools/scrape_ig_competitor.py"
+      },
+      "id": "b1000001-0004-0004-0004-000000000004",
+      "name": "🔍 競合スクレイピング（b.box/Pigeon/Richell/Thermos）",
+      "type": "n8n-nodes-base.executeCommand",
+      "typeVersion": 1,
+      "position": [
+        280,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "command": "cd /d C:\\Users\\Puser\\Desktop\\kazuki && python -X utf8 tools/plan_content.py --count 7"
+      },
+      "id": "b1000001-0005-0005-0005-000000000005",
+      "name": "📝 コンテンツ企画（7日分）",
+      "type": "n8n-nodes-base.executeCommand",
+      "typeVersion": 1,
+      "position": [
+        560,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "command": "cd /d C:\\Users\\Puser\\Desktop\\kazuki && python -X utf8 tools/teams_content.py"
+      },
+      "id": "b1000001-0006-0006-0006-000000000006",
+      "name": "📨 Teams Contents Planningに共有",
+      "type": "n8n-nodes-base.executeCommand",
+      "typeVersion": 1,
+      "position": [
+        840,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## 📅 週次タスク（週1回・手動）\n- 競合データ更新\n- 来週7日分プラン\n- SharePoint Excelアップ",
+        "height": 120,
+        "width": 300,
+        "color": 6
+      },
+      "id": "b1000001-0007-0007-0007-000000000007",
+      "name": "📋 週次タスク説明",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        0,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 0 * * 1"
+            }
+          ]
+        }
+      },
+      "id": "b1000001-0008-0008-0008-000000000008",
+      "name": "⏰ 毎週月曜 09:00（週次更新）",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        460
+      ]
+    },
+    {
+      "parameters": {
+        "command": "cd /d C:\\Users\\Puser\\Desktop\\kazuki && python -X utf8 tools/scrape_ig_competitor.py"
+      },
+      "id": "b1000001-0009-0009-0009-000000000009",
+      "name": "🔄 競合データ週次更新",
+      "type": "n8n-nodes-base.executeCommand",
+      "typeVersion": 1,
+      "position": [
+        280,
+        360
+      ]
+    },
+    {
+      "parameters": {
+        "command": "cd /d C:\\Users\\Puser\\Desktop\\kazuki && python -X utf8 tools/plan_content.py --count 7"
+      },
+      "id": "b1000001-0010-0010-0010-000000000010",
+      "name": "📝 来週7日分プラン作成",
+      "type": "n8n-nodes-base.executeCommand",
+      "typeVersion": 1,
+      "position": [
+        560,
+        360
+      ]
+    },
+    {
+      "parameters": {
+        "command": "cd /d C:\\Users\\Puser\\Desktop\\kazuki && python -X utf8 tools/teams_upload.py"
+      },
+      "id": "b1000001-0011-0011-0011-000000000011",
+      "name": "📤 SharePoint Excelアップロード",
+      "type": "n8n-nodes-base.executeCommand",
+      "typeVersion": 1,
+      "position": [
+        840,
+        360
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## 📌 Instagram投稿ツール（手動実行）\n`tools/post_instagram.py`\n承認済みコンテンツを実際にInstagramへ投稿",
+        "height": 100,
+        "width": 340,
+        "color": 3
+      },
+      "id": "b1000001-0012-0012-0012-000000000012",
+      "name": "📋 投稿ツール説明",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1100,
+        -80
+      ]
+    },
+    {
+      "parameters": {},
+      "id": "b1000001-0013-0013-0013-000000000013",
+      "name": "▶️ 手動トリガー（Instagram投稿）",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        1100,
+        80
+      ]
+    },
+    {
+      "parameters": {
+        "command": "cd /d C:\\Users\\Puser\\Desktop\\kazuki && python -X utf8 tools/post_instagram.py"
+      },
+      "id": "b1000001-0014-0014-0014-000000000014",
+      "name": "📸 Instagram投稿実行",
+      "type": "n8n-nodes-base.executeCommand",
+      "typeVersion": 1,
+      "position": [
+        1380,
+        80
+      ]
+    }
+  ],
+  "connections": {
+    "▶️ 手動トリガー（朝ルーティン）": {
+      "main": [
+        [
+          {
+            "node": "🔍 競合スクレイピング（b.box/Pigeon/Richell/Thermos）",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🔍 競合スクレイピング（b.box/Pigeon/Richell/Thermos）": {
+      "main": [
+        [
+          {
+            "node": "📝 コンテンツ企画（7日分）",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "📝 コンテンツ企画（7日分）": {
+      "main": [
+        [
+          {
+            "node": "📨 Teams Contents Planningに共有",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "⏰ 毎週月曜 09:00（週次更新）": {
+      "main": [
+        [
+          {
+            "node": "🔄 競合データ週次更新",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🔄 競合データ週次更新": {
+      "main": [
+        [
+          {
+            "node": "📝 来週7日分プラン作成",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "📝 来週7日分プラン作成": {
+      "main": [
+        [
+          {
+            "node": "📤 SharePoint Excelアップロード",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "▶️ 手動トリガー（Instagram投稿）": {
+      "main": [
+        [
+          {
+            "node": "📸 Instagram投稿実行",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "tags": [
+    {
+      "name": "Instagram"
+    },
+    {
+      "name": "SNS運用"
+    }
+  ],
+  "id": "ig001"
+}
