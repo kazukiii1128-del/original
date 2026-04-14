@@ -76,3 +76,25 @@ def test_fetch_rakuten_returns_totals():
     assert result["total_orders"] == 2
     assert result["total_units"] == 3
     assert abs(result["total_sales"] - 11000.0) < 0.01  # 3000*2 + 5000*1
+
+
+def test_main_outputs_valid_json(tmp_path, capsys):
+    import shutil
+    from marketplace_daily_report import main
+    sales_dst = tmp_path / "amazon_sales_daily.json"
+    ads_dst   = tmp_path / "amazon_ads_daily.json"
+    shutil.copy(FIXTURES / "amazon_sales_sample.json", sales_dst)
+    shutil.copy(FIXTURES / "amazon_ads_sample.json",   ads_dst)
+
+    with patch("marketplace_daily_report.DATAKEEPER", tmp_path), \
+         patch("marketplace_daily_report.RakutenRMSClient") as MockClient:
+        inst = MockClient.return_value
+        inst.list_orders.return_value = []
+        main(["--date", "2026-04-13"])
+
+    captured = capsys.readouterr()
+    data = json.loads(captured.out)
+    assert data["date"] == "2026-04-13"
+    assert "amazon_sales" in data
+    assert "amazon_ads" in data
+    assert "rakuten_sales" in data

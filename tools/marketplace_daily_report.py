@@ -140,14 +140,25 @@ def fetch_rakuten_sales(report_date: str) -> dict:
     }
 
 
+def main(argv=None):
+    p = argparse.ArgumentParser()
+    p.add_argument("--date", default=None)
+    args = p.parse_args(argv)
+
+    today = datetime.now(JST).date()
+    report_date = args.date or (today - timedelta(days=1)).strftime("%Y-%m-%d")
+
+    result = {
+        "date":          report_date,
+        "amazon_sales":  fetch_amazon_sales(report_date),
+        "amazon_ads":    fetch_amazon_ads(report_date),
+        "rakuten_sales": fetch_rakuten_sales(report_date),
+    }
+    print(json.dumps(result, ensure_ascii=False, indent=2))
+
+
 if __name__ == "__main__":
     # Windows UTF-8 fix — only when running as a script, not on import
     sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding="utf-8", errors="replace")
     sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding="utf-8", errors="replace")
-
-    parser = argparse.ArgumentParser(description="マーケットプレイス デイリーレポート")
-    parser.add_argument("--date", default=datetime.now(JST).strftime("%Y-%m-%d"), help="集計対象日 (YYYY-MM-DD)")
-    args = parser.parse_args()
-
-    result = fetch_amazon_sales(args.date)
-    print(json.dumps(result, ensure_ascii=False, indent=2))
+    main()
