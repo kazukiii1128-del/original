@@ -266,7 +266,7 @@ rows = [
  "https://www.ginza-isamiya.com/contact/",
  "https://www.ginza-isamiya.com/",
  "ginza-isamiya.com ／ WebSearch調査",
- "Instagram: @ginza_isamiya",
+ "Instagram: @ginza_isamiya_official",
  "日本製ベビー用品のみ取扱。こだわりのセレクト",
  "高感度・高価格帯。Made in Japan重視。問い合わせフォームでアプローチ"],
 
@@ -279,7 +279,7 @@ rows = [
  "order@babygoose.jp",
  "https://www.babygoose.jp/",
  "goosecompany.com ／ prtimes.jp（創業40周年PR）",
- "Instagram: @babygoose_jp ／ Facebook: BabyGoose.Japan",
+ "Instagram: @babygoose.japan ／ X: @BabyGoose__",
  "代表: 千葉宏一 ／ キッズデザイン賞4年連続受賞",
  "名入れ出産祝い専門。コラボ提案・卸交渉ともにメール窓口あり"],
 
@@ -371,7 +371,7 @@ rows = [
  "https://www.nicebaby.co.jp/pages/contact",
  "https://www.nicebaby.co.jp/",
  "nicebaby.co.jp/pages/about",
- "Instagram: @nicebaby_official",
+ "Instagram: @nicebaby_babylease ／ X: @nicebaby_tori3",
  "レンタル→購入転換モデル。試用できるチャネル",
  "レンタル経由でのブランド体験→購買導線。タイアップ交渉可"],
 
@@ -383,7 +383,7 @@ rows = [
  "","","",
  "https://shop.obebe.co.jp/",
  "shop.obebe.co.jp ／ WebSearch（Konges Sloejd取扱確認）",
- "Instagram: @obebe_shop",
+ "Instagram: @obebehiroshima",
  "北欧・輸入ベビー服セレクト",
  "Instagram DM または公式ECのお問い合わせフォームからアプローチ"],
 
@@ -394,7 +394,7 @@ rows = [
  "","","",
  "https://inspireme.jp/",
  "inspireme.jp ／ WebSearch",
- "Instagram: @inspireme_jp",
+ "",
  "輸入子供服通販セレクトショップ",
  "Instagramまたは問い合わせフォームからアプローチ"],
 
@@ -460,7 +460,7 @@ rows = [
  "","","",
  "https://bribaby.jp/",
  "bribaby.jp ／ WebSearch（セレクトショップ確認）",
- "Instagram: @brilliantbaby_jp",
+ "Instagram: @bribaby.h（本店）",
  "ベビー用品セレクトショップ",
  "問い合わせフォームまたはInstagram DM"],
 
@@ -485,7 +485,7 @@ rows = [
  "東京都","","",
  "https://www.netsea.jp/category/105",
  "netsea.jp ／ WebSearch",
- "Instagram: @netsea_jp",
+ "Instagram: @netsea.jp ／ X: @netsea_jp",
  "出品企業への卸売プラットフォーム",
  "出品登録でネットショップ・実店舗バイヤーに一括リーチ可"],
 
@@ -498,7 +498,7 @@ rows = [
  "",
  "https://www.superdelivery.com/",
  "superdelivery.com ／ WebSearch",
- "Instagram: @superdelivery_jp",
+ "Instagram: @superdelivery_media ／ X: @superdelivery_J",
  "日本製品を海外バイヤーへ卸せるプラットフォーム",
  "海外への輸出卸にも対応。グロミミの海外展開に活用可"],
 
@@ -532,7 +532,7 @@ rows = [
  "愛知県","","",
  "https://www.baby.co.jp/",
  "baby.co.jp/company/ ／ WebSearch（日本製ベビー用品メーカー調査）",
- "Instagram: @akachangarden",
+ "Instagram: @akachannoshiro",
  "新生児寝具・衣料専門。全商品日本製・国内生産",
  "日本製こだわり層へのリーチ。OEM・卸提案の余地あり"],
 
@@ -543,7 +543,7 @@ rows = [
  "","","",
  "https://kids-ec.com/",
  "kids-ec.com ／ WebSearch（ベビー用品卸確認）",
- "Instagram: @kidsec_official",
+ "",
  "ベビー用品・輸入玩具・出産お祝いの卸・仕入れ対応",
  "卸・仕入れ対応。問い合わせフォームから取引交渉"],
 
@@ -559,7 +559,7 @@ rows = [
  "https://www.sogo-seibu.co.jp/inquiry/",
  "https://www.sogo-seibu.co.jp/",
  "sogo-seibu.co.jp ／ Wikipedia ／ セブン＆アイHD IR",
- "Instagram: @sogoseibu ／ X: @sogo_seibu",
+ "X: @seibusogo_jp",
  "MD部門（キッズ・ベビー担当バイヤー）",
  "池袋西武・横浜そごうのMD担当へのアプローチ推奨。展示会または問い合わせフォーム"],
 
@@ -696,21 +696,10 @@ def extract_url(text):
     m = re.search(r'https?://[^\s　（）()]+', text)
     return m.group(0).rstrip('）)') if m else None
 
-LINK_COLS = {H.index("公式URL"), H.index("卸・問い合わせ先")}
-
-def build_row(row):
-    r = list(row)
-    for ci in LINK_COLS:
-        if ci < len(r) and r[ci]:
-            url = extract_url(r[ci])
-            if url:
-                r[ci] = f'=HYPERLINK("{url}","{r[ci].replace(chr(34), chr(39))}")'
-    return r
-
-all_data = [H] + [build_row(r) for r in rows]
+all_data = [H] + rows
 svc.spreadsheets().values().update(
     spreadsheetId=SHEET_ID, range=f"{SHEET_NAME}!A1",
-    valueInputOption="USER_ENTERED", body={"values": all_data},
+    valueInputOption="RAW", body={"values": all_data},
 ).execute()
 
 print("Data written.")
@@ -817,4 +806,26 @@ reqs.append({"updateSheetProperties":{
 
 svc.spreadsheets().batchUpdate(spreadsheetId=SHEET_ID, body={"requests":reqs}).execute()
 print("Formatting applied.")
+
+# ── リンク設定（書式設定の後に実行してクリア防止）───────────────────────────
+LINK_COLS = [H.index("公式URL"), H.index("卸・問い合わせ先")]
+link_reqs = []
+for i, row in enumerate(rows):
+    for col_idx in LINK_COLS:
+        cell_text = row[col_idx] if col_idx < len(row) else ""
+        url = extract_url(cell_text) if cell_text else None
+        if url:
+            link_reqs.append({"updateCells": {
+                "rows": [{"values": [{
+                    "userEnteredValue": {"stringValue": cell_text},
+                    "userEnteredFormat": {"textFormat": {"link": {"uri": url}}}
+                }]}],
+                "fields": "userEnteredValue,userEnteredFormat.textFormat.link",
+                "range": {"sheetId": sheet_id, "startRowIndex": i+1,
+                          "startColumnIndex": col_idx, "endColumnIndex": col_idx+1},
+            }})
+if link_reqs:
+    svc.spreadsheets().batchUpdate(spreadsheetId=SHEET_ID, body={"requests": link_reqs}).execute()
+print("Links applied.")
+
 print(f"\n完成: https://docs.google.com/spreadsheets/d/{SHEET_ID}/edit")
