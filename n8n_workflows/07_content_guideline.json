@@ -1,0 +1,349 @@
+{
+  "name": "📝 コンテンツガイドライン管理 - Grosmimi JP",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "## 📝 コンテンツガイドライン管理\n\n**登場人物:**\n- 🎬 **コラボ** — インフルエンサー動画パターン設計\n- 📋 **ガイドラインマン** — カテゴリー別訴求ルール管理（Google Sheet: `訴求ガイドライン`）\n- 🔍 **リールマン** — 競合リール調査 → コラボに渡す\n- 📸 **コンテンツ制作** — 4カテゴリーの画像生成\n\n**ガイドライン保存先:** `https://docs.google.com/spreadsheets/d/1vBVvQZ-3p0vz8rQAQye8L-0AvmUiuuxW929ZV3PyRgM/`",
+        "height": 220,
+        "width": 720,
+        "color": 5
+      },
+      "id": "g1000001-0001-0001-0001-000000000001",
+      "name": "📋 ワークフロー概要",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [0, -380]
+    },
+    {
+      "parameters": {
+        "content": "## 🔁 ガイドライン更新フロー\n\n```\nリールマン（競合調査）\n  ↓\nコラボ（動画パターン設計）\n  ↓\nガイドラインマン（ルール整備）\n  ↓\nGoogle Sheet更新\n```",
+        "height": 180,
+        "width": 280,
+        "color": 6
+      },
+      "id": "g1000001-0002-0002-0002-000000000002",
+      "name": "📋 更新フロー",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [740, -380]
+    },
+    {
+      "parameters": {
+        "content": "## STEP 1️⃣ — リールマン\n競合ハッシュタグ・リールから高エンゲージメントパターンを調査\n\n調査対象: #ストローマグ #ベビーマグ #bboxjapan 等",
+        "height": 120,
+        "width": 360,
+        "color": 4
+      },
+      "id": "g1000001-0003-0003-0003-000000000003",
+      "name": "📋 STEP1説明",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [0, -100]
+    },
+    {
+      "parameters": {},
+      "id": "g1000001-0004-0004-0004-000000000004",
+      "name": "▶️ 手動トリガー（ガイドライン更新）",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [0, 80]
+    },
+    {
+      "parameters": {
+        "command": "cd /d C:\\Users\\Puser\\Desktop\\kazuki && python -X utf8 tools/scrape_ig_competitor.py --hashtags \"ストローマグ,ベビーマグ,bboxjapan\" --reels-only"
+      },
+      "id": "g1000001-0005-0005-0005-000000000005",
+      "name": "🔍 リールマン — 競合リール調査",
+      "type": "n8n-nodes-base.executeCommand",
+      "typeVersion": 1,
+      "position": [280, 80]
+    },
+    {
+      "parameters": {
+        "content": "## STEP 2️⃣ — コラボ\nインフルエンサー動画パターンを分析・設計\n\n出力: 動画ストーリー構成シート（Google Sheet）",
+        "height": 120,
+        "width": 340,
+        "color": 4
+      },
+      "id": "g1000001-0006-0006-0006-000000000006",
+      "name": "📋 STEP2説明",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [640, -100]
+    },
+    {
+      "parameters": {
+        "command": "cd /d C:\\Users\\Puser\\Desktop\\kazuki && python -X utf8 tools/create_video_story_sheet.py"
+      },
+      "id": "g1000001-0007-0007-0007-000000000007",
+      "name": "🎬 コラボ — 動画ストーリー構成シート更新",
+      "type": "n8n-nodes-base.executeCommand",
+      "typeVersion": 1,
+      "position": [640, 80]
+    },
+    {
+      "parameters": {
+        "content": "Google Sheet `インフル向け動画ストーリー` を更新\n構成パターン: ペイン共感型 / 逆張り教育型 / 比較体験談型 / 論争型 / ランキング型",
+        "height": 80,
+        "width": 360,
+        "color": 3
+      },
+      "id": "g1000001-0008-0008-0008-000000000008",
+      "name": "📋 コラボ出力",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [640, 200]
+    },
+    {
+      "parameters": {
+        "content": "## STEP 3️⃣ — ガイドラインマン\nカテゴリー別訴求ガイドライン（Word）を生成\n\n対象カテゴリー:\n- PPSUグループ（素材・漏れない・離乳食・ストロー練習・保冷・構造）\n- ステンレスグループ（医療グレード・保温×漏れない・シームレス・比較）",
+        "height": 160,
+        "width": 380,
+        "color": 4
+      },
+      "id": "g1000001-0009-0009-0009-000000000009",
+      "name": "📋 STEP3説明",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [1060, -120]
+    },
+    {
+      "parameters": {
+        "command": "cd /d C:\\Users\\Puser\\Desktop\\kazuki && python -X utf8 tools/create_content_guideline.py"
+      },
+      "id": "g1000001-0010-0010-0010-000000000010",
+      "name": "📋 ガイドラインマン — インフル訴求ガイドライン生成",
+      "type": "n8n-nodes-base.executeCommand",
+      "typeVersion": 1,
+      "position": [1060, 80]
+    },
+    {
+      "parameters": {
+        "command": "cd /d C:\\Users\\Puser\\Desktop\\kazuki && python -X utf8 tools/create_baby_drinking_guideline.py"
+      },
+      "id": "g1000001-0011-0011-0011-000000000011",
+      "name": "🍼 赤ちゃん飲み動画ガイドライン生成",
+      "type": "n8n-nodes-base.executeCommand",
+      "typeVersion": 1,
+      "position": [1060, 240]
+    },
+    {
+      "parameters": {
+        "content": "出力: Wordファイル（カテゴリー別訴求ルール）\n- 必須ワード / 推奨フック\n- 言っていいこと / 言ってはいけないこと\n- 感情の着地点 / 推奨パターン",
+        "height": 100,
+        "width": 340,
+        "color": 3
+      },
+      "id": "g1000001-0012-0012-0012-000000000012",
+      "name": "📋 ガイドライン出力内容",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [1060, 360]
+    },
+    {
+      "parameters": {
+        "command": "cd /d C:\\Users\\Puser\\Desktop\\kazuki && python -X utf8 tools/teams_notify.py --subject ガイドライン更新完了"
+      },
+      "id": "g1000001-0013-0013-0013-000000000013",
+      "name": "📨 Teams完了通知",
+      "type": "n8n-nodes-base.executeCommand",
+      "typeVersion": 1,
+      "position": [1440, 160]
+    },
+    {
+      "parameters": {
+        "content": "---\n## 📸 コンテンツ制作フロー（4カテゴリー）\n月間目標: **12〜24本**\n- Meme（共感）: 4〜6本\n- 製品教育: 4〜8本\n- イベント/プロモ: 2〜4本\n- ライフスタイル: 4〜6本",
+        "height": 160,
+        "width": 420,
+        "color": 7
+      },
+      "id": "g1000001-0014-0014-0014-000000000014",
+      "name": "📋 コンテンツ制作概要",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [0, 460]
+    },
+    {
+      "parameters": {},
+      "id": "g1000001-0015-0015-0015-000000000015",
+      "name": "▶️ 手動トリガー（コンテンツ制作）",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [0, 660]
+    },
+    {
+      "parameters": {
+        "content": "## 🤣 カテゴリー1: Meme（共感）\n育児あるある・Before/After・比較ミーム\nモデル: flash（速度優先）",
+        "height": 100,
+        "width": 300,
+        "color": 4
+      },
+      "id": "g1000001-0016-0016-0016-000000000016",
+      "name": "📋 Meme説明",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [280, 460]
+    },
+    {
+      "parameters": {
+        "command": "cd /d C:\\Users\\Puser\\Desktop\\kazuki && python -X utf8 tools/generate_image.py --category meme --model flash --output .tmp/images/meme_draft.png"
+      },
+      "id": "g1000001-0017-0017-0017-000000000017",
+      "name": "🤣 Meme画像生成（共感コンテンツ）",
+      "type": "n8n-nodes-base.executeCommand",
+      "typeVersion": 1,
+      "position": [280, 660]
+    },
+    {
+      "parameters": {
+        "content": "## 📚 カテゴリー2: 製品教育\nPPSU解説カード・比較インフォ・HowToカルーセル\n出力: `Data Storage/images/`",
+        "height": 100,
+        "width": 300,
+        "color": 4
+      },
+      "id": "g1000001-0018-0018-0018-000000000018",
+      "name": "📋 製品教育説明",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [640, 460]
+    },
+    {
+      "parameters": {
+        "command": "cd /d C:\\Users\\Puser\\Desktop\\kazuki && python -X utf8 tools/plan_content.py --format carousel --topic \"製品教育\" --count 1"
+      },
+      "id": "g1000001-0019-0019-0019-000000000019",
+      "name": "📚 製品教育コンテンツ企画",
+      "type": "n8n-nodes-base.executeCommand",
+      "typeVersion": 1,
+      "position": [640, 660]
+    },
+    {
+      "parameters": {
+        "content": "## 🎉 カテゴリー3: イベント/プロモ\nシーズンカレンダー連動・割引・キャンペーン\n参考: jp_brand_guideline.md シーズンカレンダー",
+        "height": 100,
+        "width": 300,
+        "color": 4
+      },
+      "id": "g1000001-0020-0020-0020-000000000020",
+      "name": "📋 イベント説明",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [1000, 460]
+    },
+    {
+      "parameters": {
+        "command": "cd /d C:\\Users\\Puser\\Desktop\\kazuki && python -X utf8 tools/plan_content.py --format promo --topic \"イベント\" --count 1"
+      },
+      "id": "g1000001-0021-0021-0021-000000000021",
+      "name": "🎉 イベント/プロモコンテンツ企画",
+      "type": "n8n-nodes-base.executeCommand",
+      "typeVersion": 1,
+      "position": [1000, 660]
+    },
+    {
+      "parameters": {
+        "content": "## 🌿 カテゴリー4: ライフスタイル\n外出・家庭・成長モーメント・プラットレイ\n日本の日常 + あたたかい自然光トーン",
+        "height": 100,
+        "width": 300,
+        "color": 4
+      },
+      "id": "g1000001-0022-0022-0022-000000000022",
+      "name": "📋 ライフスタイル説明",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [1360, 460]
+    },
+    {
+      "parameters": {
+        "command": "cd /d C:\\Users\\Puser\\Desktop\\kazuki && python -X utf8 tools/generate_image.py --category lifestyle --model flash --output .tmp/images/lifestyle_draft.png"
+      },
+      "id": "g1000001-0023-0023-0023-000000000023",
+      "name": "🌿 ライフスタイル画像生成",
+      "type": "n8n-nodes-base.executeCommand",
+      "typeVersion": 1,
+      "position": [1360, 660]
+    },
+    {
+      "parameters": {
+        "command": "cd /d C:\\Users\\Puser\\Desktop\\kazuki && python -X utf8 tools/teams_content.py"
+      },
+      "id": "g1000001-0024-0024-0024-000000000024",
+      "name": "📨 Teams Contents Planningに共有",
+      "type": "n8n-nodes-base.executeCommand",
+      "typeVersion": 1,
+      "position": [820, 860]
+    },
+    {
+      "parameters": {
+        "content": "## 📅 月次コンテンツカレンダー\n\n| 週 | 月 | 水 | 金 |\n|---|---|---|---|\n| 1 | ライフ | 製品教育 | Meme |\n| 2 | イベント | ライフ | 製品教育 |\n| 3 | Meme | ライフ | 製品教育 |\n| 4 | イベント | Meme | ライフ |",
+        "height": 200,
+        "width": 360,
+        "color": 6
+      },
+      "id": "g1000001-0025-0025-0025-000000000025",
+      "name": "📋 月次カレンダー",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [1060, 860]
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [{ "field": "cronExpression", "expression": "0 0 1 * *" }]
+        }
+      },
+      "id": "g1000001-0026-0026-0026-000000000026",
+      "name": "⏰ 毎月1日 09:00（ガイドライン月次更新）",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [0, -220]
+    }
+  ],
+  "connections": {
+    "▶️ 手動トリガー（ガイドライン更新）": {
+      "main": [[{ "node": "🔍 リールマン — 競合リール調査", "type": "main", "index": 0 }]]
+    },
+    "⏰ 毎月1日 09:00（ガイドライン月次更新）": {
+      "main": [[{ "node": "🔍 リールマン — 競合リール調査", "type": "main", "index": 0 }]]
+    },
+    "🔍 リールマン — 競合リール調査": {
+      "main": [[{ "node": "🎬 コラボ — 動画ストーリー構成シート更新", "type": "main", "index": 0 }]]
+    },
+    "🎬 コラボ — 動画ストーリー構成シート更新": {
+      "main": [[
+        { "node": "📋 ガイドラインマン — インフル訴求ガイドライン生成", "type": "main", "index": 0 },
+        { "node": "🍼 赤ちゃん飲み動画ガイドライン生成", "type": "main", "index": 0 }
+      ]]
+    },
+    "📋 ガイドラインマン — インフル訴求ガイドライン生成": {
+      "main": [[{ "node": "📨 Teams完了通知", "type": "main", "index": 0 }]]
+    },
+    "🍼 赤ちゃん飲み動画ガイドライン生成": {
+      "main": [[{ "node": "📨 Teams完了通知", "type": "main", "index": 0 }]]
+    },
+    "▶️ 手動トリガー（コンテンツ制作）": {
+      "main": [[
+        { "node": "🤣 Meme画像生成（共感コンテンツ）", "type": "main", "index": 0 },
+        { "node": "📚 製品教育コンテンツ企画", "type": "main", "index": 0 },
+        { "node": "🎉 イベント/プロモコンテンツ企画", "type": "main", "index": 0 },
+        { "node": "🌿 ライフスタイル画像生成", "type": "main", "index": 0 }
+      ]]
+    },
+    "🤣 Meme画像生成（共感コンテンツ）": {
+      "main": [[{ "node": "📨 Teams Contents Planningに共有", "type": "main", "index": 0 }]]
+    },
+    "📚 製品教育コンテンツ企画": {
+      "main": [[{ "node": "📨 Teams Contents Planningに共有", "type": "main", "index": 0 }]]
+    },
+    "🎉 イベント/プロモコンテンツ企画": {
+      "main": [[{ "node": "📨 Teams Contents Planningに共有", "type": "main", "index": 0 }]]
+    },
+    "🌿 ライフスタイル画像生成": {
+      "main": [[{ "node": "📨 Teams Contents Planningに共有", "type": "main", "index": 0 }]]
+    }
+  },
+  "active": false,
+  "id": "cg001",
+  "settings": { "executionOrder": "v1" },
+  "tags": [{ "name": "コンテンツ" }, { "name": "ガイドライン" }]
+}

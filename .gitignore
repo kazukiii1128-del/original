@@ -21,6 +21,9 @@ build/
 venv/
 .venv/
 
+# === ブラウザログ ===
+.playwright-mcp/
+
 # === OS/IDE ===
 .DS_Store
 Thumbs.db
@@ -28,3 +31,7 @@ Thumbs.db
 *.swo
 weekly/config.json
 config.json
+grosmimi_jp2025.pdf
+grosmimi_jp2025.zip
+grosmimi_jp2025.pdf
+grosmimi_jp2025.zip

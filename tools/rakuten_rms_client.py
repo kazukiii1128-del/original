@@ -1,22 +1,24 @@
 #!/usr/bin/env python3
 """
-Rakuten RMS API client for Order Management API v2.
+Minimal Rakuten RMS API client wrapper.
 
-Auth: ESA Base64(serviceSecret:licenseKey)
-Content-Type: application/json;charset=UTF-8
+This is intentionally generic: fill `credentials/rakuten_rms_config.json` with your
+RMS endpoints and auth details. Example config:
 
-Flow:
-  1. searchOrder  -> returns orderNumberList
-  2. getOrder     -> takes orderNumberList, returns full order details
+{
+  "base_url": "https://api.rms.rakuten.co.jp",
+  "auth": { "type": "header", "header_name": "Authorization", "value": "Bearer xxxxx" },
+  "list_orders_url": "/shops/{shop_id}/orders",
+  "update_order_url": "/shops/{shop_id}/orders/{order_id}/status",
+  "default_params": {"limit":50}
+}
+
+Endpoints and param names vary by RMS setup — adapt the config accordingly.
 """
 import json
 import requests
 import os
-from datetime import datetime, timedelta, timezone
 from typing import Any, Dict, List
-
-
-JST = timezone(timedelta(hours=9))
 
 
 class RakutenRMSClient:
@@ -27,63 +29,58 @@ class RakutenRMSClient:
             self.cfg: Dict[str, Any] = json.load(f)
         self.base = self.cfg.get("base_url", "").rstrip("/")
         self.session = requests.Session()
-        self.session.headers.update({"Content-Type": "application/json;charset=UTF-8"})
         auth = self.cfg.get("auth") or {}
         if auth.get("type") == "header":
             self.session.headers.update({auth.get("header_name"): auth.get("value")})
 
-    def _url(self, path: str) -> str:
-        return path if path.startswith("http") else f"{self.base}{path}"
+    def _full_url(self, path: str) -> str:
+        if path.startswith("http"):
+            return path
+        return f"{self.base}{path}"
 
-    def search_order_numbers(self, days: int = 30, order_progress: List[int] = None) -> List[str]:
-        """Call searchOrder in 7-day chunks to get all order numbers (API returns max 30 per call)."""
-        now = datetime.now(JST)
-        all_numbers: List[str] = []
-        seen: set = set()
-        chunk_days = 7
-        for offset in range(0, days, chunk_days):
-            chunk_end = now - timedelta(days=offset)
-            chunk_start = now - timedelta(days=min(offset + chunk_days, days))
-            body: Dict[str, Any] = {
-                "dateType": 1,
-                "startDatetime": chunk_start.strftime("%Y-%m-%dT%H:%M:%S+0900"),
-                "endDatetime": chunk_end.strftime("%Y-%m-%dT%H:%M:%S+0900"),
-            }
-            if order_progress:
-                body["orderProgressList"] = order_progress
-            resp = self.session.post(self._url("/es/2.0/order/searchOrder"), json=body)
-            resp.raise_for_status()
-            data = resp.json()
-            for num in (data.get("orderNumberList") or []):
-                if num not in seen:
-                    seen.add(num)
-                    all_numbers.append(num)
-        return all_numbers
+    def list_orders(self, shop_id: str = None, status: str = None, params: Dict[str, Any] = None) -> List[Dict[str, Any]]:
+        url_tmpl = self.cfg.get("list_orders_url")
+        if not url_tmpl:
+            raise ValueError("list_orders_url not set in config")
+        url = url_tmpl.format(shop_id=shop_id or self.cfg.get("shop_id", ""))
+        full = self._full_url(url)
+        q = dict(self.cfg.get("default_params", {}))
+        if params:
+            q.update(params)
+        if status:
+            q[ self.cfg.get("status_param_name", "status") ] = status
+        resp = self.session.get(full, params=q)
+        resp.raise_for_status()
+        data = resp.json()
+        # Assume orders are in a top-level list or under a key specified in config
+        orders_key = self.cfg.get("orders_key")
+        if orders_key:
+            return data.get(orders_key, [])
+        if isinstance(data, list):
+            return data
+        # Try common keys
+        for k in ("orders", "data", "result"):
+            if k in data and isinstance(data[k], list):
+                return data[k]
+        # Fallback: return raw data wrapped
+        return [data]
 
-    def get_orders(self, order_numbers: List[str]) -> List[Dict[str, Any]]:
-        """Call getOrder for a batch of order numbers (max 100 per request)."""
-        orders = []
-        for i in range(0, len(order_numbers), 100):
-            batch = order_numbers[i:i + 100]
-            body = {"orderNumberList": batch, "version": 3}
-            resp = self.session.post(self._url("/es/2.0/order/getOrder"), json=body)
-            resp.raise_for_status()
-            data = resp.json()
-            orders.extend(data.get("OrderModelList") or [])
-        return orders
-
-    def list_orders(self, days: int = 30, order_progress: List[int] = None) -> List[Dict[str, Any]]:
-        """Convenience: search + fetch full order details."""
-        numbers = self.search_order_numbers(days=days, order_progress=order_progress)
-        if not numbers:
-            return []
-        return self.get_orders(numbers)
-
-    def update_order_status(self, order_number: str, payload: Dict[str, Any] = None) -> Dict[str, Any]:
-        body = payload or self.cfg.get("delivered_payload") or {"orderProgress": 5}
-        body = dict(body)
-        body["orderNumber"] = order_number
-        resp = self.session.post(self._url("/es/2.0/order/updateOrderProgress"), json=body)
+    def update_order_status(self, order_id: str, shop_id: str = None, payload: Dict[str, Any] = None, method: str = "post") -> Dict[str, Any]:
+        url_tmpl = self.cfg.get("update_order_url")
+        if not url_tmpl:
+            raise ValueError("update_order_url not set in config")
+        url = url_tmpl.format(order_id=order_id, shop_id=shop_id or self.cfg.get("shop_id", ""))
+        full = self._full_url(url)
+        data = payload or {}
+        m = method.lower()
+        if m == "post":
+            resp = self.session.post(full, json=data)
+        elif m == "put":
+            resp = self.session.put(full, json=data)
+        elif m == "patch":
+            resp = self.session.patch(full, json=data)
+        else:
+            raise ValueError(f"Unsupported method: {method}")
         resp.raise_for_status()
         try:
             return resp.json()

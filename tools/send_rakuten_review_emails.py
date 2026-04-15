@@ -46,7 +46,7 @@ def build_review_link(shop_id, item_id, item_url):
 
 
 def create_message_html(customer_name, item_name, review_link, shop_name=None):
-        shop_line = f"<br>ショップ名：{shop_name}" if shop_name else ""
+        shop_line = f"<p>ショップ名: {shop_name}</p>" if shop_name else ""
         html = f"""
         <div style="font-family:system-ui,Helvetica,Arial;line-height:1.5;color:#111;">
             <pre style="border-top:1px solid #ddd;border-bottom:1px solid #ddd;padding:8px;">----------------------------------------------------------------------
@@ -58,7 +58,9 @@ def create_message_html(customer_name, item_name, review_link, shop_name=None):
             <p>★だけの評価や、短いコメントでも大歓迎です！<br>お客様からのお声は、今後の商品づくり・サービス向上の大切な参考にさせていただきます。</p>
             <p>お忙しいところ恐れ入りますが、<br>お時間のある際にご協力いただけましたら嬉しいです。</p>
 
-            <p><strong>【購入した商品名】</strong><br>{item_name}{shop_line}</p>
+            <p><strong>【購入した商品名】</strong><br>{item_name}</p>
+
+            {shop_line}
             <p><a href="{review_link}" target="_blank" style="display:inline-block;padding:10px 16px;background:#e60012;color:#fff;text-decoration:none;border-radius:4px;">レビューを書く</a></p>
 
             <p>商品や発送などに関するご不明な点がございましたら、お気軽にお問い合わせください。<br>

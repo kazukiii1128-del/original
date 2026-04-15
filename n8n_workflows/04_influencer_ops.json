@@ -1,0 +1,216 @@
+{
+  "name": "👥 インフルエンサー ギフティング管理",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "## 👥 インフルエンサー ギフティング管理\n**フロー**: フォーム受信 → Shopify注文作成 → Notion同期\n\n📁 ツール群:\n- `tools/process_influencer_order.py` - Shopify Draft Order作成\n- `tools/sync_influencer_notion.py` - Google Sheets → Notion同期\n- `tools/fetch_influencer_orders.py` - 注文データ取得",
+        "height": 180,
+        "width": 660,
+        "color": 5
+      },
+      "id": "d1000001-0001-0001-0001-000000000001",
+      "name": "📋 ワークフロー概要",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        0,
+        -300
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## 1️⃣ フォーム受信 → Shopify注文\nTypeformまたはShopifyページのWebhookで起動",
+        "height": 100,
+        "width": 360,
+        "color": 4
+      },
+      "id": "d1000001-0002-0002-0002-000000000002",
+      "name": "📋 フォーム受信説明",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        0,
+        -120
+      ]
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "influencer-gifting",
+        "responseMode": "onReceived",
+        "responseData": ""
+      },
+      "id": "d1000001-0003-0003-0003-000000000003",
+      "name": "🌐 Webhook受信（ギフティングフォーム）",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        0,
+        60
+      ]
+    },
+    {
+      "parameters": {
+        "command": "cd /d C:\\Users\\Puser\\Desktop\\kazuki && python -X utf8 tools/process_influencer_order.py --input \"{{ $json.body | toJsonString }}\""
+      },
+      "id": "d1000001-0004-0004-0004-000000000004",
+      "name": "🛍️ Shopify Draft Order作成",
+      "type": "n8n-nodes-base.executeCommand",
+      "typeVersion": 1,
+      "position": [
+        300,
+        60
+      ]
+    },
+    {
+      "parameters": {
+        "command": "cd /d C:\\Users\\Puser\\Desktop\\kazuki && python -X utf8 tools/teams_notify.py --subject 新規ギフティング申請"
+      },
+      "id": "d1000001-0005-0005-0005-000000000005",
+      "name": "📨 Teams新規申請通知",
+      "type": "n8n-nodes-base.executeCommand",
+      "typeVersion": 1,
+      "position": [
+        580,
+        60
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## 2️⃣ Google Sheets → Notion 同期\n週次でインフルエンサーデータを同期",
+        "height": 100,
+        "width": 360,
+        "color": 6
+      },
+      "id": "d1000001-0006-0006-0006-000000000006",
+      "name": "📋 Notion同期説明",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        0,
+        280
+      ]
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 1 * * 1"
+            }
+          ]
+        }
+      },
+      "id": "d1000001-0007-0007-0007-000000000007",
+      "name": "⏰ 毎週月曜 10:00（Notion同期）",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        440
+      ]
+    },
+    {
+      "parameters": {
+        "command": "cd /d C:\\Users\\Puser\\Desktop\\kazuki && python -X utf8 tools/sync_influencer_notion.py"
+      },
+      "id": "d1000001-0008-0008-0008-000000000008",
+      "name": "🔄 Google Sheets → Notion同期",
+      "type": "n8n-nodes-base.executeCommand",
+      "typeVersion": 1,
+      "position": [
+        300,
+        440
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**同期内容**: 新規レコード追加、変更検出、孤立Notionレコード検出\n**Google Sheetsは読み取り専用** — シートは一切変更しない",
+        "height": 80,
+        "width": 380,
+        "color": 3
+      },
+      "id": "d1000001-0009-0009-0009-000000000009",
+      "name": "📋 同期仕様",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        300,
+        540
+      ]
+    },
+    {
+      "parameters": {
+        "command": "cd /d C:\\Users\\Puser\\Desktop\\kazuki && python -X utf8 tools/fetch_influencer_orders.py"
+      },
+      "id": "d1000001-0010-0010-0010-000000000010",
+      "name": "📦 注文状況データ取得",
+      "type": "n8n-nodes-base.executeCommand",
+      "typeVersion": 1,
+      "position": [
+        580,
+        440
+      ]
+    }
+  ],
+  "connections": {
+    "🌐 Webhook受信（ギフティングフォーム）": {
+      "main": [
+        [
+          {
+            "node": "🛍️ Shopify Draft Order作成",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🛍️ Shopify Draft Order作成": {
+      "main": [
+        [
+          {
+            "node": "📨 Teams新規申請通知",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "⏰ 毎週月曜 10:00（Notion同期）": {
+      "main": [
+        [
+          {
+            "node": "🔄 Google Sheets → Notion同期",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🔄 Google Sheets → Notion同期": {
+      "main": [
+        [
+          {
+            "node": "📦 注文状況データ取得",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "tags": [
+    {
+      "name": "インフルエンサー"
+    },
+    {
+      "name": "Shopify"
+    }
+  ],
+  "id": "in001"
+}
