@@ -684,6 +684,12 @@ rows = [
  "ベビー写真＋ギフトグッズ販売あり。撮影衣装・小物のコラボ提案が有効。フォームから"],
 ]
 
+# A→G順に並べ替え・通し番号振り直し
+CAT_ORDER = ["A.", "B.", "C.", "D.", "E.", "F.", "G."]
+rows.sort(key=lambda r: next((i for i, c in enumerate(CAT_ORDER) if r[0].startswith(c)), 99))
+for i, row in enumerate(rows):
+    row[1] = str(i + 1)
+
 all_data = [H] + rows
 svc.spreadsheets().values().update(
     spreadsheetId=SHEET_ID, range=f"{SHEET_NAME}!A1",
