@@ -690,37 +690,28 @@ rows.sort(key=lambda r: next((i for i, c in enumerate(CAT_ORDER) if r[0].startsw
 for i, row in enumerate(rows):
     row[1] = str(i + 1)
 
-all_data = [H] + rows
-svc.spreadsheets().values().update(
-    spreadsheetId=SHEET_ID, range=f"{SHEET_NAME}!A1",
-    valueInputOption="RAW", body={"values": all_data},
-).execute()
-
 import re
 
 def extract_url(text):
-    """セル内テキストからURLを抽出（末尾の日本語説明を除去）"""
     m = re.search(r'https?://[^\s　（）()]+', text)
     return m.group(0).rstrip('）)') if m else None
 
-# リンク化対象列: HYPERLINK数式で書き直す
-LINK_COLS = [H.index("公式URL"), H.index("卸・問い合わせ先")]
-link_reqs = []
-for i, row in enumerate(rows):
-    for col_idx in LINK_COLS:
-        cell_text = row[col_idx] if col_idx < len(row) else ""
-        url = extract_url(cell_text) if cell_text else None
-        if url:
-            safe_text = cell_text.replace('"', "'")
-            formula = f'=HYPERLINK("{url}","{safe_text}")'
-            link_reqs.append({"updateCells": {
-                "rows": [{"values": [{"userEnteredValue": {"formulaValue": formula}}]}],
-                "fields": "userEnteredValue",
-                "range": {"sheetId": sheet_id, "startRowIndex": i+1,
-                          "startColumnIndex": col_idx, "endColumnIndex": col_idx+1},
-            }})
-if link_reqs:
-    svc.spreadsheets().batchUpdate(spreadsheetId=SHEET_ID, body={"requests": link_reqs}).execute()
+LINK_COLS = {H.index("公式URL"), H.index("卸・問い合わせ先")}
+
+def build_row(row):
+    r = list(row)
+    for ci in LINK_COLS:
+        if ci < len(r) and r[ci]:
+            url = extract_url(r[ci])
+            if url:
+                r[ci] = f'=HYPERLINK("{url}","{r[ci].replace(chr(34), chr(39))}")'
+    return r
+
+all_data = [H] + [build_row(r) for r in rows]
+svc.spreadsheets().values().update(
+    spreadsheetId=SHEET_ID, range=f"{SHEET_NAME}!A1",
+    valueInputOption="USER_ENTERED", body={"values": all_data},
+).execute()
 
 print("Data written.")
 
